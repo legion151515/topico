@@ -9,7 +9,9 @@ class Carrera extends Model
     protected $fillable = [
         'categoria',
         'nombre',
-        'acronimo'
+        'acronimo',
+        'anios',
+        'grado'
     ];
 
     public function pacientes()
