@@ -85,15 +85,32 @@ class AtencionController extends Controller
         'tipo_salida' => $request->tipo_salida ?? 'Manual',
     ]);
     
+    // Asociar medicamentos y descontar del stock automáticamente
     if ($request->has('medicamentos')) {
         foreach ($request->medicamentos as $med_id => $cantidad) {
             if ($cantidad > 0) {
-                $atencion->medicamentos()->attach($med_id, ['cantidad_usada' => $cantidad]);
+                // Buscar el medicamento
+                $medicamento = Medicamento::find($med_id);
+
+                // Verificar si hay stock suficiente
+                if ($medicamento && $medicamento->cantidad_stock >= $cantidad) {
+                    // Descontar del stock
+                    $medicamento->cantidad_stock -= $cantidad;
+                    $medicamento->save();
+
+                    // Asociar a la atención
+                    $atencion->medicamentos()->attach($med_id, ['cantidad_usada' => $cantidad]);
+                } else {
+                    // Si no hay stock suficiente, notificar
+                    $nombreMed = $medicamento ? $medicamento->nombre : "ID: $med_id";
+                    return redirect()->route('atenciones.index')
+                        ->with('warning', "Atención registrada, pero no había stock suficiente de: {$nombreMed}. Stock disponible: " . ($medicamento ? $medicamento->cantidad_stock : 0));
+                }
             }
         }
     }
-    
-    return redirect()->route('atenciones.index')->with('success', 'Atención registrada correctamente');
+
+    return redirect()->route('atenciones.index')->with('success', 'Atención registrada correctamente y stock actualizado');
 }
 
     public function show(string $id)
@@ -138,15 +155,45 @@ class AtencionController extends Controller
 
         // Actualizar medicamentos si existen
         if ($request->has('medicamentos')) {
+            // PASO 1: Devolver al stock los medicamentos antiguos
+            $medicamentosAntiguos = $atencion->medicamentos;
+            foreach ($medicamentosAntiguos as $medAntiguo) {
+                $medicamento = Medicamento::find($medAntiguo->id);
+                if ($medicamento) {
+                    // Devolver la cantidad que se había usado
+                    $cantidadAntigua = $medAntiguo->pivot->cantidad_usada;
+                    $medicamento->cantidad_stock += $cantidadAntigua;
+                    $medicamento->save();
+                }
+            }
+
+            // PASO 2: Limpiar relaciones antiguas
             $atencion->medicamentos()->detach();
+
+            // PASO 3: Asociar nuevos medicamentos y descontar del stock
             foreach ($request->medicamentos as $med_id => $cantidad) {
                 if ($cantidad > 0) {
-                    $atencion->medicamentos()->attach($med_id, ['cantidad_usada' => $cantidad]);
+                    $medicamento = Medicamento::find($med_id);
+
+                    // Verificar si hay stock suficiente
+                    if ($medicamento && $medicamento->cantidad_stock >= $cantidad) {
+                        // Descontar del stock
+                        $medicamento->cantidad_stock -= $cantidad;
+                        $medicamento->save();
+
+                        // Asociar a la atención
+                        $atencion->medicamentos()->attach($med_id, ['cantidad_usada' => $cantidad]);
+                    } else {
+                        // Si no hay stock suficiente, notificar
+                        $nombreMed = $medicamento ? $medicamento->nombre : "ID: $med_id";
+                        return redirect()->route('atenciones.index')
+                            ->with('warning', "Atención actualizada, pero no había stock suficiente de: {$nombreMed}. Stock disponible: " . ($medicamento ? $medicamento->cantidad_stock : 0));
+                    }
                 }
             }
         }
 
-        return redirect()->route('atenciones.index')->with('success', 'Atención actualizada correctamente');
+        return redirect()->route('atenciones.index')->with('success', 'Atención actualizada correctamente y stock ajustado');
     }
     public function buscarPaciente($dni)
     {
@@ -168,10 +215,24 @@ class AtencionController extends Controller
     }
 
     public function destroy(string $id)
-{
-    $atencion = Atencion::find($id);
-    $atencion->medicamentos()->detach();
-    $atencion->delete();
-    return redirect()->route('atenciones.index')->with('success', 'Atención eliminada correctamente');
-}
+    {
+        $atencion = Atencion::with('medicamentos')->find($id);
+
+        // Devolver medicamentos al stock antes de eliminar
+        foreach ($atencion->medicamentos as $medicamento) {
+            $med = Medicamento::find($medicamento->id);
+            if ($med) {
+                // Devolver la cantidad que se había usado
+                $cantidadUsada = $medicamento->pivot->cantidad_usada;
+                $med->cantidad_stock += $cantidadUsada;
+                $med->save();
+            }
+        }
+
+        // Eliminar relaciones y atención
+        $atencion->medicamentos()->detach();
+        $atencion->delete();
+
+        return redirect()->route('atenciones.index')->with('success', 'Atención eliminada y stock devuelto correctamente');
+    }
 }
