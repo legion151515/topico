@@ -6,6 +6,7 @@ use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\HistorialController;
+use App\Http\Controllers\ImportarPacienteController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarreraController;
 
@@ -19,6 +20,11 @@ Route::middleware('auth')->group(function () {
     // Rutas especiales ANTES de resource routes
     Route::get('/atenciones/buscar/{dni}', [AtencionController::class, 'buscarPaciente']);
     Route::get('/carreras/categoria/{categoria}', [CarreraController::class, 'obtenerPorCategoria'])->name('carreras.porCategoria');
+
+    // Importar Pacientes
+    Route::get('/pacientes/importar', [ImportarPacienteController::class, 'index'])->name('pacientes.importar');
+    Route::post('/pacientes/importar/procesar', [ImportarPacienteController::class, 'importar'])->name('pacientes.importar.procesar');
+    Route::get('/pacientes/plantilla/descargar', [ImportarPacienteController::class, 'descargarPlantilla'])->name('pacientes.plantilla');
 
     // Resource routes
     Route::resource('carreras', CarreraController::class);

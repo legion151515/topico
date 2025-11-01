@@ -6,9 +6,14 @@
 <div class="card">
     <div class="card-header">
         <h2>Pacientes Registrados</h2>
-        <a href="{{ route('pacientes.create') }}" class="btn btn-primary float-right">
-            <i class="fas fa-plus"></i> Nuevo Paciente
-        </a>
+        <div class="float-right" style="display: flex; gap: 10px;">
+            <a href="{{ route('pacientes.importar') }}" class="btn btn-success">
+                <i class="fas fa-file-import"></i> Importar desde Excel
+            </a>
+            <a href="{{ route('pacientes.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Paciente
+            </a>
+        </div>
     </div>
 
     <div class="card-body">
