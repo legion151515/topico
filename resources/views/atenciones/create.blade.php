@@ -251,7 +251,7 @@
         } else {
             // Cargar carreras de la categoría seleccionada
             divCarrera.style.display = 'block';
-            fetch(`/carreras/${categoria}`)
+            fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
                 .then(data => {
                     carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';

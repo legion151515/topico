@@ -304,7 +304,7 @@
                 divGrado.style.display = 'none';
             }
 
-            fetch(`/carreras/${categoria}`)
+            fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
                 .then(data => {
                     carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';
@@ -314,7 +314,7 @@
                         option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
                         carreraSelect.appendChild(option);
                     });
-                    
+
                     // SELECCIONAR CARRERA GUARDADA
                     if (datosAtencion.carrera_id) {
                         carreraSelect.value = datosAtencion.carrera_id;
@@ -367,7 +367,7 @@
             divOtros.style.display = 'block';
         } else {
             divCarrera.style.display = 'block';
-            fetch(`/carreras/${categoria}`)
+            fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
                 .then(data => {
                     carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';

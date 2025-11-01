@@ -14,10 +14,13 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/atenciones/buscar/{dni}', [AtencionController::class, 'buscarPaciente']);
-    Route::get('/carreras/{categoria}', [CarreraController::class, 'obtenerPorCategoria']);
-    Route::resource('carreras', CarreraController::class);
 
+    // Rutas especiales ANTES de resource routes
+    Route::get('/atenciones/buscar/{dni}', [AtencionController::class, 'buscarPaciente']);
+    Route::get('/carreras/categoria/{categoria}', [CarreraController::class, 'obtenerPorCategoria'])->name('carreras.porCategoria');
+
+    // Resource routes
+    Route::resource('carreras', CarreraController::class);
     Route::resource('atenciones', AtencionController::class);
     Route::resource('pacientes', PacienteController::class);
     Route::resource('medicamentos', MedicamentoController::class);
