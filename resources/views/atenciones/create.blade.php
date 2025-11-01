@@ -32,7 +32,7 @@
 
                 <div class="form-group">
                     <label style="font-weight: 700;"><i class="fas fa-sign-out-alt"></i> Hora Salida</label>
-                    <input type="time" id="hora_salida" name="hora_salida" class="form-control" style="border: 1px solid #ddd; padding: 12px;">
+                    <input type="time" id="hora_salida" name="hora_salida" class="form-control" step="1" style="border: 1px solid #ddd; padding: 12px;">
                 </div>
 
                 <div class="form-group">
@@ -332,12 +332,13 @@
     function cambiarTipoSalida() {
     const tipo = document.getElementById('tipo_salida').value;
     const horaSalidaInput = document.getElementById('hora_salida');
-    
+
     if (tipo === 'Automático') {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        horaSalidaInput.value = hours + ':' + minutes;
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        horaSalidaInput.value = hours + ':' + minutes + ':' + seconds;
         horaSalidaInput.disabled = true;
         horaSalidaInput.style.background = '#f0f0f0';
     } else if (tipo === 'Manual') {

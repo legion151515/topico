@@ -80,9 +80,10 @@ class AtencionController extends Controller
         'motivo_otro' => $request->motivo_otro,
         'fecha' => $request->fecha ?? now()->format('Y-m-d'),
         'hora_entrada' => $request->hora_entrada,
-        
-        'hora_salida' => \Carbon\Carbon::parse($request->hora_salida)->subHours(5)->format('H:i:s'),
+        'hora_salida' => $request->hora_salida ? \Carbon\Carbon::parse($request->hora_salida)->subHours(5)->format('H:i:s') : null,
         'tipo_salida' => $request->tipo_salida ?? 'Manual',
+        'semestre' => $request->semestre,
+        'grado' => $request->grado,
     ]);
     
     // Asociar medicamentos y descontar del stock automáticamente
@@ -151,7 +152,9 @@ class AtencionController extends Controller
             'hora_entrada' => $request->hora_entrada,
             'hora_salida' => $request->hora_salida,
             'tipo_salida' => $request->tipo_salida,
-            'observaciones' => $request->observaciones
+            'observaciones' => $request->observaciones,
+            'semestre' => $request->semestre,
+            'grado' => $request->grado,
         ]);
 
         // Actualizar medicamentos si existen
