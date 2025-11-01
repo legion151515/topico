@@ -104,7 +104,7 @@ class AtencionController extends Controller
 
     public function edit(string $id)
     {
-        $atencion = Atencion::find($id);
+        $atencion = Atencion::with(['paciente.carrera', 'motivo', 'medicamentos'])->findOrFail($id);
         $motivos = MotivoConsulta::all();
         $medicamentos = Medicamento::all();
         return view('atenciones.edit', compact('atencion', 'motivos', 'medicamentos'));
@@ -112,9 +112,41 @@ class AtencionController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $atencion = Atencion::find($id);
-        $atencion->update($request->all());
-        return redirect()->route('atenciones.index')->with('success', 'Atención actualizada');
+        $atencion = Atencion::with('paciente')->findOrFail($id);
+
+        // Actualizar datos del paciente si existen
+        if ($atencion->paciente && $request->has('dni')) {
+            $atencion->paciente->update([
+                'nombre' => $request->nombre,
+                'apellido' => $request->apellido,
+                'edad' => $request->edad,
+                'carrera_id' => $request->carrera_id,
+                'otros_especificacion' => $request->otros_especificacion
+            ]);
+        }
+
+        // Actualizar atención (solo campos permitidos)
+        $atencion->update([
+            'motivo_id' => $request->motivo_id,
+            'motivo_otro' => $request->motivo_otro,
+            'fecha' => $request->fecha,
+            'hora_entrada' => $request->hora_entrada,
+            'hora_salida' => $request->hora_salida,
+            'tipo_salida' => $request->tipo_salida,
+            'observaciones' => $request->observaciones
+        ]);
+
+        // Actualizar medicamentos si existen
+        if ($request->has('medicamentos')) {
+            $atencion->medicamentos()->detach();
+            foreach ($request->medicamentos as $med_id => $cantidad) {
+                if ($cantidad > 0) {
+                    $atencion->medicamentos()->attach($med_id, ['cantidad_usada' => $cantidad]);
+                }
+            }
+        }
+
+        return redirect()->route('atenciones.index')->with('success', 'Atención actualizada correctamente');
     }
     public function buscarPaciente($dni)
     {

@@ -34,8 +34,11 @@ Route::middleware('auth')->group(function () {
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/area', [ReporteController::class, 'area'])->name('reportes.area');
+    Route::get('/reportes/area/pdf', [ReporteController::class, 'areaPDF'])->name('reportes.area.pdf');
     Route::get('/reportes/enfermedad', [ReporteController::class, 'enfermedad'])->name('reportes.enfermedad');
+    Route::get('/reportes/enfermedad/pdf', [ReporteController::class, 'enfermedadPDF'])->name('reportes.enfermedad.pdf');
     Route::get('/reportes/stock', [ReporteController::class, 'stock'])->name('reportes.stock');
+    Route::get('/reportes/stock/pdf', [ReporteController::class, 'stockPDF'])->name('reportes.stock.pdf');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
