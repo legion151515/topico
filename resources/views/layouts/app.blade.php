@@ -670,6 +670,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('historial.index') }}" class="{{ request()->routeIs('historial.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-medical-alt"></i> Historial Clínico
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('reportes.index') }}" class="{{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i> Reportes
                 </a>
