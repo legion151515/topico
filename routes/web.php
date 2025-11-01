@@ -5,6 +5,7 @@ use App\Http\Controllers\AtencionController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\HistorialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarreraController;
 
@@ -25,6 +26,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('pacientes', PacienteController::class);
     Route::resource('medicamentos', MedicamentoController::class);
 
+    // Historial Clínico
+    Route::get('/historial', [HistorialController::class, 'index'])->name('historial.index');
+    Route::post('/historial/buscar', [HistorialController::class, 'buscar'])->name('historial.buscar');
+    Route::get('/historial/pdf/{paciente}', [HistorialController::class, 'generarPDF'])->name('historial.pdf');
+
+    // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/area', [ReporteController::class, 'area'])->name('reportes.area');
     Route::get('/reportes/enfermedad', [ReporteController::class, 'enfermedad'])->name('reportes.enfermedad');
