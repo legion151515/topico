@@ -197,8 +197,6 @@
         'categoria' => $atencion->paciente && $atencion->paciente->carrera ? $atencion->paciente->carrera->categoria : '',
         'carrera_id' => $atencion->paciente->carrera_id ?? '',
         'otros_especificacion' => $atencion->paciente->otros_especificacion ?? '',
-        'semestre' => $atencion->semestre ?? '',
-        'grado' => $atencion->grado ?? '',
         'edad' => $atencion->paciente->edad ?? '',
         'motivo_id' => $atencion->motivo_id ?? '',
         'motivo_otro' => $atencion->motivo_otro ?? '',
@@ -206,7 +204,7 @@
         'medicamentos' => $atencion->medicamentos->map(function($m) {
             return [
                 'id' => $m->id,
-                'cantidad' => $m->pivot->cantidad ?? 0
+                'cantidad' => $m->pivot->cantidad_usada ?? 0
             ];
         })->toArray()
     ]) !!};
@@ -468,6 +466,14 @@
 
     // VALIDACIÓN AL ENVIAR
     document.getElementById('formAtencion').addEventListener('submit', function(e) {
+        // CRÍTICO: Habilitar todos los inputs de cantidad antes de enviar
+        // Los inputs disabled NO se envían en el form
+        document.querySelectorAll('.cantidad_input').forEach(input => {
+            if (input.value && input.value > 0) {
+                input.disabled = false;
+            }
+        });
+
         const tipoSalida = document.getElementById('tipo_salida').value;
         const horaSalida = document.getElementById('hora_salida').value;
         const categoria = document.getElementById('categoria').value;

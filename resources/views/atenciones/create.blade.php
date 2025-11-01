@@ -384,6 +384,14 @@
 
     // Validar antes de enviar
     document.getElementById('formAtencion').addEventListener('submit', function(e) {
+        // CRÍTICO: Habilitar todos los inputs de cantidad antes de enviar
+        // Los inputs disabled NO se envían en el form
+        document.querySelectorAll('.cantidad_input').forEach(input => {
+            if (input.value && input.value > 0) {
+                input.disabled = false;
+            }
+        });
+
         const tipoSalida = document.getElementById('tipo_salida').value;
         const horaSalida = document.getElementById('hora_salida').value;
         const categoria = document.getElementById('categoria').value;
