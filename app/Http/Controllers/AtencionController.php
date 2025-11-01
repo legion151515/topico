@@ -86,9 +86,10 @@ class AtencionController extends Controller
     ]);
     
     // Asociar medicamentos y descontar del stock automáticamente
-    if ($request->has('medicamentos')) {
-        foreach ($request->medicamentos as $med_id => $cantidad) {
-            if ($cantidad > 0) {
+    if ($request->has('cantidad')) {
+        foreach ($request->cantidad as $med_id => $cantidad) {
+            // Solo procesar si el checkbox está marcado Y la cantidad es mayor a 0
+            if (isset($request->medicamentos[$med_id]) && $cantidad > 0) {
                 // Buscar el medicamento
                 $medicamento = Medicamento::find($med_id);
 
@@ -154,7 +155,7 @@ class AtencionController extends Controller
         ]);
 
         // Actualizar medicamentos si existen
-        if ($request->has('medicamentos')) {
+        if ($request->has('cantidad')) {
             // PASO 1: Devolver al stock los medicamentos antiguos
             $medicamentosAntiguos = $atencion->medicamentos;
             foreach ($medicamentosAntiguos as $medAntiguo) {
@@ -171,8 +172,9 @@ class AtencionController extends Controller
             $atencion->medicamentos()->detach();
 
             // PASO 3: Asociar nuevos medicamentos y descontar del stock
-            foreach ($request->medicamentos as $med_id => $cantidad) {
-                if ($cantidad > 0) {
+            foreach ($request->cantidad as $med_id => $cantidad) {
+                // Solo procesar si el checkbox está marcado Y la cantidad es mayor a 0
+                if (isset($request->medicamentos[$med_id]) && $cantidad > 0) {
                     $medicamento = Medicamento::find($med_id);
 
                     // Verificar si hay stock suficiente

@@ -20,14 +20,26 @@ class CarreraController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Validación dinámica según categoría
+        $rules = [
             'categoria' => 'required',
             'nombre' => 'required',
-            'acronimo' => 'required'
+        ];
+
+        // Solo requerir acrónimo para Tecnológico y Pedagógico
+        if ($request->categoria === 'Tecnológico' || $request->categoria === 'Pedagógico') {
+            $rules['acronimo'] = 'nullable';
+        }
+
+        $request->validate($rules);
+
+        Carrera::create([
+            'categoria' => $request->categoria,
+            'nombre' => $request->nombre,
+            'acronimo' => $request->acronimo ?? null,
         ]);
 
-        Carrera::create($request->all());
-        return redirect()->route('carreras.index')->with('success', 'Carrera creada');
+        return redirect()->route('carreras.index')->with('success', 'Carrera creada correctamente');
     }
 
     public function show(Carrera $carrera)
