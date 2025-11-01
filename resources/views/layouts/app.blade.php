@@ -382,6 +382,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('carreras.index') }}" class="{{ request()->routeIs('carreras.*') ? 'active' : '' }}">
+                    <i class="fas fa-graduation-cap"></i> Carreras
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('reportes.index') }}" class="{{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i> Reportes
                 </a>

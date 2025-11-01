@@ -11,47 +11,80 @@
         </a>
     </div>
 
-    <div style="padding: 30px;">
+    <div class="card-body">
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
         @if($atenciones->count())
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>DNI</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Motivo</th>
-                        <th>Entrada</th>
-                        <th>Salida</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($atenciones as $atencion)
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td>{{ $atencion->fecha ? \Carbon\Carbon::parse($atencion->fecha)->format('d/m/Y') : 'N/A' }}</td>
-                            <td>{{ $atencion->paciente->dni ?? 'N/A' }}</td>
-                            <td>{{ $atencion->paciente->nombre ?? 'N/A' }}</td>
-                            <td>{{ $atencion->paciente->apellido ?? 'N/A' }}</td>
-                            <td>{{ $atencion->motivo->nombre ?? $atencion->motivo_otro }}</td>
-                            <td>{{ $atencion->hora_entrada }}</td>
-                            <td>{{ $atencion->hora_salida ?? '-' }}</td>
-                            <td>
-                                <a href="{{ route('atenciones.edit', $atencion->id) }}" class="btn btn-warning" style="font-size: 12px;">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <form action="{{ route('atenciones.destroy', $atencion->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro?')" style="font-size: 12px;">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
-                                </form>
-                            </td>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>DNI</th>
+                            <th>Motivo</th>
+                            <th>Hora Entrada</th>
+                            <th>Hora Salida</th>
+                            <th>Medicamentos</th>
+                            <th>Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($atenciones as $atencion)
+                            <tr>
+                                <td>{{ $atencion->fecha ? \Carbon\Carbon::parse($atencion->fecha)->format('d/m/Y') : $atencion->created_at->format('d/m/Y') }}</td>
+                                <td>
+                                    @if($atencion->paciente)
+                                        {{ $atencion->paciente->nombre }} {{ $atencion->paciente->apellido }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td><strong>{{ $atencion->paciente->dni ?? 'N/A' }}</strong></td>
+                                <td>
+                                    @if($atencion->motivo)
+                                        <span class="badge badge-info">{{ $atencion->motivo->nombre }}</span>
+                                    @else
+                                        {{ $atencion->motivo_otro }}
+                                    @endif
+                                </td>
+                                <td>{{ $atencion->hora_entrada }}</td>
+                                <td>
+                                    @if($atencion->hora_salida)
+                                        {{ $atencion->hora_salida }}
+                                    @else
+                                        <span class="badge badge-warning">En atención</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">{{ $atencion->medicamentos->count() }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('atenciones.show', $atencion->id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('atenciones.edit', $atencion->id) }}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('atenciones.destroy', $atencion->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de eliminar esta atención?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i> No hay atenciones registradas.

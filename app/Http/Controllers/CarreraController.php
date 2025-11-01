@@ -30,6 +30,12 @@ class CarreraController extends Controller
         return redirect()->route('carreras.index')->with('success', 'Carrera creada');
     }
 
+    public function show(Carrera $carrera)
+    {
+        $carrera->load('pacientes');
+        return view('carreras.show', compact('carrera'));
+    }
+
     public function edit(Carrera $carrera)
     {
         return view('carreras.edit', compact('carrera'));
@@ -43,6 +49,12 @@ class CarreraController extends Controller
 
     public function destroy(Carrera $carrera)
     {
+        // Verificar si tiene pacientes asociados
+        if ($carrera->pacientes()->count() > 0) {
+            return redirect()->route('carreras.index')
+                ->with('error', 'No se puede eliminar la carrera porque tiene pacientes asociados');
+        }
+
         $carrera->delete();
         return redirect()->route('carreras.index')->with('success', 'Carrera eliminada');
     }

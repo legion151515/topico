@@ -16,6 +16,10 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -32,12 +36,15 @@
                         <td>{{ $carrera->nombre }}</td>
                         <td><strong>{{ $carrera->acronimo }}</strong></td>
                         <td>
+                            <a href="{{ route('carreras.show', $carrera) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
                             <a href="{{ route('carreras.edit', $carrera) }}" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <form action="{{ route('carreras.destroy', $carrera) }}" method="POST" style="display:inline;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro?')">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de eliminar esta carrera?')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

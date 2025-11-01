@@ -11,4 +11,9 @@ class Carrera extends Model
         'nombre',
         'acronimo'
     ];
+
+    public function pacientes()
+    {
+        return $this->hasMany(Paciente::class);
+    }
 }

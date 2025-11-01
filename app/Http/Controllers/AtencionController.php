@@ -12,7 +12,9 @@ class AtencionController extends Controller
 {
     public function index()
     {
-        $atenciones = Atencion::all();
+        $atenciones = Atencion::with(['paciente.carrera', 'motivo', 'medicamentos'])
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('atenciones.index', compact('atenciones'));
     }
 
@@ -96,7 +98,7 @@ class AtencionController extends Controller
 
     public function show(string $id)
     {
-        $atencion = Atencion::find($id);
+        $atencion = Atencion::with(['paciente.carrera', 'motivo', 'medicamentos'])->findOrFail($id);
         return view('atenciones.show', compact('atencion'));
     }
 
