@@ -55,19 +55,20 @@
                 <!-- DNI -->
                 <div class="form-group">
                     <label><i class="fas fa-id-card"></i> DNI *</label>
-                    <input type="text" name="dni" class="form-control" placeholder="Ej: 75832984" required>
+                    <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 75832984" required>
+                    <small class="form-text text-muted">Ingrese DNI y presione Enter o Tab para buscar</small>
                 </div>
 
                 <!-- NOMBRE -->
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Nombre *</label>
-                    <input type="text" name="nombre" class="form-control" placeholder="Nombre del paciente" required>
+                    <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre del paciente" required>
                 </div>
 
                 <!-- APELLIDO -->
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Apellido *</label>
-                    <input type="text" name="apellido" class="form-control" placeholder="Apellido del paciente" required>
+                    <input type="text" id="apellido" name="apellido" class="form-control" placeholder="Apellido del paciente" required>
                 </div>
 
                 <!-- CATEGORÍA (Área) -->
@@ -441,5 +442,76 @@
             }
         }
     });
+
+    // ============================================
+    // AUTO-COMPLETADO AL BUSCAR POR DNI
+    // ============================================
+    const dniInput = document.getElementById('dni');
+    if (dniInput) {
+        dniInput.addEventListener('blur', function() {
+            buscarPacientePorDNI();
+        });
+
+        dniInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarPacientePorDNI();
+            }
+        });
+    }
+
+    function buscarPacientePorDNI() {
+        const dni = document.getElementById('dni').value;
+
+        if (!dni || dni.length < 8) {
+            return; // No buscar si el DNI es muy corto
+        }
+
+        // Mostrar indicador de carga
+        document.getElementById('nombre').value = 'Buscando...';
+        document.getElementById('apellido').value = 'Buscando...';
+
+        fetch(`/atenciones/buscar/${dni}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.encontrado) {
+                    // Llenar campos automáticamente
+                    document.getElementById('nombre').value = data.nombre;
+                    document.getElementById('apellido').value = data.apellido;
+
+                    // Mostrar mensaje de éxito
+                    alert('✅ Paciente encontrado: ' + data.nombre + ' ' + data.apellido);
+
+                    // Si tiene carrera, auto-seleccionar
+                    if (data.carrera_id) {
+                        // Primero seleccionar la categoría
+                        if (data.categoria) {
+                            document.getElementById('categoria').value = data.categoria;
+                            // Cargar carreras de esa categoría
+                            cargarCarreras();
+                            // Después de un pequeño delay, seleccionar la carrera
+                            setTimeout(() => {
+                                document.getElementById('carrera_id').value = data.carrera_id;
+                            }, 500);
+                        }
+                    }
+
+                    // Si tiene edad, auto-completar
+                    if (data.edad) {
+                        document.getElementById('edad').value = data.edad;
+                    }
+                } else {
+                    // Limpiar campos
+                    document.getElementById('nombre').value = '';
+                    document.getElementById('apellido').value = '';
+                    console.log('Paciente no encontrado, puede registrarlo normalmente');
+                }
+            })
+            .catch(error => {
+                console.error('Error al buscar paciente:', error);
+                document.getElementById('nombre').value = '';
+                document.getElementById('apellido').value = '';
+            });
+    }
 </script>
 @endsection

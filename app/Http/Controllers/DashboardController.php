@@ -21,10 +21,10 @@ class DashboardController extends Controller
             Carbon::today()->addDays(30)
         ])->count();
         
-        // Últimas 10 atenciones
+        // Últimas 5 atenciones
         $ultimas_atenciones = Atencion::with('paciente', 'motivo')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(5)
             ->get();
         
         // Atenciones por área (carrera)

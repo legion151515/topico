@@ -37,10 +37,10 @@
 
 </div>
 
-<!-- ÚLTIMAS 10 ATENCIONES -->
+<!-- ÚLTIMAS 5 ATENCIONES -->
 <div class="card">
     <div class="card-header">
-        <h2>ÚLTIMAS 10 ATENCIONES</h2>
+        <h2>ÚLTIMAS 5 ATENCIONES</h2>
     </div>
     <div style="overflow-x: auto;">
         <table class="table">

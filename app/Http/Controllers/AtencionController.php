@@ -118,17 +118,20 @@ class AtencionController extends Controller
     }
     public function buscarPaciente($dni)
     {
-        $paciente = Paciente::where('dni', $dni)->first();
-        
+        $paciente = Paciente::with('carrera')->where('dni', $dni)->first();
+
         if ($paciente) {
             return response()->json([
                 'encontrado' => true,
                 'nombre' => $paciente->nombre,
                 'apellido' => $paciente->apellido,
-                'carrera' => $paciente->carrera
+                'edad' => $paciente->edad,
+                'carrera_id' => $paciente->carrera_id,
+                'categoria' => $paciente->carrera ? $paciente->carrera->categoria : null,
+                'otros_especificacion' => $paciente->otros_especificacion
             ]);
         }
-        
+
         return response()->json(['encontrado' => false]);
     }
 
