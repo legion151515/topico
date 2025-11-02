@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AtencionController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
+use App\Http\Controllers\MotivoConsultaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\ImportarPacienteController;
@@ -31,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('atenciones', AtencionController::class);
     Route::resource('pacientes', PacienteController::class);
     Route::resource('medicamentos', MedicamentoController::class);
+    Route::resource('motivos', MotivoConsultaController::class);
 
     // Historial Clínico
     Route::get('/historial', [HistorialController::class, 'index'])->name('historial.index');
