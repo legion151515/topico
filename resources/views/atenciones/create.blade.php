@@ -2,6 +2,12 @@
 
 @section('page_title', 'Nueva Atención Médica')
 
+@push('head')
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+@endpush
+
 @section('content')
 <div class="card">
     <div class="card-header">
@@ -206,6 +212,12 @@
 </div>
 
 <script>
+    // ========================================================
+    // VERSIÓN DEL FORMULARIO: 2025-11-02 02:30 - FIX CRÍTICO
+    // Si ves este comentario en la consola, el JavaScript está actualizado
+    // ========================================================
+    console.log('✅ Formulario Atenciones v2025-11-02-0230 - Carrera ID Validation Fix');
+
     // Configuración de semestres y grados por categoría
     const configuracion = {
         'Tecnológico': {
