@@ -31,6 +31,9 @@ class AtencionController extends Controller
     \Log::info('Request Nombre:', ['nombre' => $request->nombre]);
     \Log::info('Request Apellido:', ['apellido' => $request->apellido]);
     \Log::info('Request Edad:', ['edad' => $request->edad]);
+    \Log::info('Request Carrera ID:', ['carrera_id' => $request->carrera_id, 'tipo' => gettype($request->carrera_id)]);
+    \Log::info('Request Categoria:', ['categoria' => $request->categoria]);
+    \Log::info('Request ALL:', $request->all());
 
     // Validar que el DNI no esté vacío
     if (empty($request->dni)) {
@@ -42,13 +45,31 @@ class AtencionController extends Controller
         $paciente = Paciente::where('dni', $request->dni)->first();
         \Log::info('Paciente encontrado:', ['existe' => $paciente ? 'SI' : 'NO']);
 
+        // Determinar el carrera_id correcto
+        $carrera_id = null;
+
+        // Solo asignar carrera_id si es numérico y mayor que 0
+        if (!empty($request->carrera_id) && is_numeric($request->carrera_id) && $request->carrera_id > 0) {
+            $carrera_id = (int) $request->carrera_id;
+        } elseif (!empty($request->carrera_id)) {
+            // Si carrera_id no es numérico, intentar buscar por nombre
+            \Log::warning('carrera_id no es numérico', ['valor' => $request->carrera_id]);
+            $carreraEncontrada = \App\Models\Carrera::where('nombre', $request->carrera_id)->first();
+            if ($carreraEncontrada) {
+                $carrera_id = $carreraEncontrada->id;
+                \Log::info('Carrera encontrada por nombre', ['nombre' => $request->carrera_id, 'id' => $carrera_id]);
+            }
+        }
+
+        \Log::info('Carrera ID final:', ['carrera_id' => $carrera_id, 'tipo' => gettype($carrera_id)]);
+
         if ($paciente) {
             // Si existe, ACTUALIZAR
             \Log::info('Actualizando paciente...');
             $paciente->update([
                 'nombre' => $request->nombre ?? $paciente->nombre,
                 'apellido' => $request->apellido ?? $paciente->apellido,
-                'carrera_id' => $request->carrera_id ?? $paciente->carrera_id,
+                'carrera_id' => $carrera_id ?? $paciente->carrera_id,
                 'otros_especificacion' => $request->otros_especificacion ?? $paciente->otros_especificacion,
                 'edad' => $request->edad ?? $paciente->edad
             ]);
@@ -60,7 +81,7 @@ class AtencionController extends Controller
                 'dni' => $request->dni,
                 'nombre' => $request->nombre ?? 'SIN NOMBRE',
                 'apellido' => $request->apellido ?? 'SIN APELLIDO',
-                'carrera_id' => $request->carrera_id,
+                'carrera_id' => $carrera_id,
                 'otros_especificacion' => $request->otros_especificacion,
                 'edad' => $request->edad ?? 0
             ]);
