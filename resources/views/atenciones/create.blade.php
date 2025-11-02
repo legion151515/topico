@@ -259,7 +259,7 @@
             divCarrera.style.display = 'none';
             divOtros.style.display = 'block';
         } else {
-            // Para todas las demás categorías: cargar de la BD
+            // Para TODAS las categorías (incluida Escuela): cargar de la BD
             divCarrera.style.display = 'block';
             divOtros.style.display = 'none';
 
@@ -269,7 +269,7 @@
                     carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';
                     data.forEach(carrera => {
                         const option = document.createElement('option');
-                        option.value = carrera.id;
+                        option.value = carrera.id; // ✅ AHORA SÍ PONE EL ID
                         if (carrera.acronimo) {
                             option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
                         } else {
