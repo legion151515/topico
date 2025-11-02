@@ -222,63 +222,73 @@
     };
 
     // Cargar carreras dinámicamente según categoría
-    function cargarCarreras() {
-        const categoria = document.getElementById('categoria').value;
-        const carreraSelect = document.getElementById('carrera_id');
-        const divCarrera = document.getElementById('div_carrera');
-        const divOtros = document.getElementById('div_otros');
-        const divSemestre = document.getElementById('div_semestre');
-        const divGrado = document.getElementById('div_grado');
-        const otrosInput = document.getElementById('otros_especificacion');
+    // Cargar carreras dinámicamente según categoría
+function cargarCarreras() {
+    const categoria = document.getElementById('categoria').value;
+    const carreraSelect = document.getElementById('carrera_id');
+    const divCarrera = document.getElementById('div_carrera');
+    const divOtros = document.getElementById('div_otros');
+    const divSemestre = document.getElementById('div_semestre');
+    const divGrado = document.getElementById('div_grado');
+    const otrosInput = document.getElementById('otros_especificacion');
 
-        // Resetear todo
-        carreraSelect.innerHTML = '<option value="">-- Cargando --</option>';
-        divOtros.style.display = 'none';
+    // Resetear todo
+    carreraSelect.innerHTML = '<option value="">-- Cargando --</option>';
+    divOtros.style.display = 'none';
+    divSemestre.style.display = 'none';
+    divGrado.style.display = 'none';
+    otrosInput.value = '';
+
+    if (!categoria) {
+        divCarrera.style.display = 'none';
+        return;
+    }
+
+    if (categoria === 'Otros') {
+        // Si es "Otros", mostrar campo de texto libre
+        divCarrera.style.display = 'none';
+        divOtros.style.display = 'block';
         divSemestre.style.display = 'none';
         divGrado.style.display = 'none';
-        otrosInput.value = '';
+    } else if (categoria === 'Escuela') {
+        // Para ESCUELA: mostrar opciones fijas (Inicial, Primaria, Secundaria)
+        divCarrera.style.display = 'block';
+        carreraSelect.innerHTML = '<option value="">-- Selecciona nivel --</option>';
+        
+        const nivelesEscuela = ['Inicial', 'Primaria', 'Secundaria'];
+        nivelesEscuela.forEach(nivel => {
+            const option = document.createElement('option');
+            option.value = nivel;
+            option.textContent = nivel;
+            carreraSelect.appendChild(option);
+        });
 
-        if (!categoria) {
-            divCarrera.style.display = 'none';
-            return;
-        }
-
-        if (categoria === 'Otros') {
-            // Si es "Otros", mostrar campo de texto libre
-            divCarrera.style.display = 'none';
-            divOtros.style.display = 'block';
-            divSemestre.style.display = 'none';
-            divGrado.style.display = 'none';
-        } else {
-            // Cargar carreras de la categoría seleccionada
-            divCarrera.style.display = 'block';
-            fetch(`/carreras/categoria/${categoria}`)
-                .then(response => response.json())
-                .then(data => {
-                    carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';
-                    data.forEach(carrera => {
-                        const option = document.createElement('option');
-                        option.value = carrera.id;
-                        option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
-                        carreraSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    carreraSelect.innerHTML = '<option value="">Error al cargar carreras</option>';
+        divGrado.style.display = 'block';
+        divSemestre.style.display = 'none';
+    } else {
+        // Para TECNOLOGICO y PEDAGOGICO: cargar de la BD
+        divCarrera.style.display = 'block';
+        fetch(`/carreras/categoria/${categoria}`)
+            .then(response => response.json())
+            .then(data => {
+                carreraSelect.innerHTML = '<option value="">-- Selecciona una carrera --</option>';
+                data.forEach(carrera => {
+                    const option = document.createElement('option');
+                    option.value = carrera.id;
+                    option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
+                    carreraSelect.appendChild(option);
                 });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                carreraSelect.innerHTML = '<option value="">Error al cargar carreras</option>';
+            });
 
-            // Mostrar semestres o grados según categoría
-            if (categoria === 'Escuela') {
-                divGrado.style.display = 'block';
-                divSemestre.style.display = 'none';
-            } else {
-                divSemestre.style.display = 'block';
-                divGrado.style.display = 'none';
-                actualizarSemestres(categoria);
-            }
-        }
+        divSemestre.style.display = 'block';
+        divGrado.style.display = 'none';
+        actualizarSemestres(categoria);
     }
+}
 
     // Actualizar semestres según categoría
     function actualizarSemestres(categoria) {
