@@ -12,19 +12,19 @@
         @csrf
 
         <div style="padding: 30px;">
-            
+
             <!-- TIEMPO DE ATENCIÓN - PRIMERO Y OBLIGATORIO -->
             <h3 style="color: #1e3c72; margin-bottom: 20px; font-size: 16px; font-weight: 600; background: #fff3cd; padding: 15px; border-left: 4px solid #ff9800; border-radius: 4px;">
                 <i class="fas fa-clock"></i> ⚠️ TIEMPO DE ATENCIÓN - OBLIGATORIO
             </h3>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                
+
                 <div class="form-group">
                     <label style="font-weight: 700; color: #c0392b;"><i class="fas fa-calendar-alt"></i> Fecha *</label>
                     <input type="date" id="fecha" name="fecha" class="form-control" required style="border: 2px solid #4CAF50; padding: 12px;">
                 </div>
-                
+
                 <div class="form-group">
                     <label style="font-weight: 700; color: #c0392b;"><i class="fas fa-sign-in-alt"></i> Hora Entrada *</label>
                     <input type="time" id="hora_entrada" name="hora_entrada" class="form-control" required style="border: 2px solid #4CAF50; padding: 12px;">
@@ -51,7 +51,7 @@
             </h3>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                
+
                 <!-- DNI -->
                 <div class="form-group">
                     <label><i class="fas fa-id-card"></i> DNI *</label>
@@ -154,7 +154,7 @@
                     <div style="padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #4CAF50;">
                         <div style="display: flex; align-items: flex-start; gap: 10px;">
                             <input type="checkbox" id="med_{{ $med->id }}" name="medicamentos[{{ $med->id }}]" value="{{ $med->id }}" onchange="toggleCantidad({{ $med->id }})">
-                            
+
                             <div style="flex: 1;">
                                 <strong>{{ $med->nombre }}</strong><br>
                                 <small style="color: #666;">Vencimiento: {{ $med->fecha_vencimiento }}</small><br>
@@ -165,7 +165,7 @@
                                 @endif
                             </div>
                         </div>
-                        
+
                         <input type="number" class="cantidad_input" id="cantidad_{{ $med->id }}" name="cantidad[{{ $med->id }}]" min="1" max="{{ $med->cantidad_stock }}" placeholder="Cantidad" disabled style="margin-top: 10px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                 @endforeach
@@ -197,27 +197,28 @@
     // Configuración de semestres y grados por categoría
     const configuracion = {
         'Tecnológico': {
-            semestres: ['I', 'II', 'III', 'IV', 'V', 'VI'],
-            mostrarSemestre: true,
-            mostrarGrado: false
+            semestres: ['I', 'II', 'III', 'IV', 'V', 'VI']
         },
         'Pedagógico': {
-            semestres: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'],
-            mostrarSemestre: true,
-            mostrarGrado: false
+            semestres: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
         },
         'Escuela': {
-            mostrarSemestre: false,
-            mostrarGrado: true,
             grados: {
-                'Inicial': null, // Sin grados específicos, solo edad
-                'Primaria': ['1°', '2°', '3°', '4°', '5°', '6°'],
-                'Secundaria': ['1°', '2°', '3°', '4°', '5°']
+                '3 años': null,
+                '4 años': null,
+                '5 años': null,
+                '1° Primaria': '1°',
+                '2° Primaria': '2°',
+                '3° Primaria': '3°',
+                '4° Primaria': '4°',
+                '5° Primaria': '5°',
+                '6° Primaria': '6°',
+                '1° Secundaria': '1°',
+                '2° Secundaria': '2°',
+                '3° Secundaria': '3°',
+                '4° Secundaria': '4°',
+                '5° Secundaria': '5°'
             }
-        },
-        'Otros': {
-            mostrarSemestre: false,
-            mostrarGrado: false
         }
     };
 
@@ -229,14 +230,12 @@
         const divOtros = document.getElementById('div_otros');
         const divSemestre = document.getElementById('div_semestre');
         const divGrado = document.getElementById('div_grado');
-        const otrosInput = document.getElementById('otros_especificacion');
 
         // Resetear todo
         carreraSelect.innerHTML = '<option value="">-- Cargando --</option>';
         divOtros.style.display = 'none';
         divSemestre.style.display = 'none';
         divGrado.style.display = 'none';
-        otrosInput.value = '';
 
         if (!categoria) {
             divCarrera.style.display = 'none';
@@ -247,11 +246,11 @@
             // Si es "Otros", mostrar campo de texto libre
             divCarrera.style.display = 'none';
             divOtros.style.display = 'block';
-            divSemestre.style.display = 'none';
-            divGrado.style.display = 'none';
         } else {
-            // Cargar carreras de la categoría seleccionada
+            // Para todas las demás categorías: cargar de la BD
             divCarrera.style.display = 'block';
+            divOtros.style.display = 'none';
+
             fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
                 .then(data => {
@@ -259,24 +258,26 @@
                     data.forEach(carrera => {
                         const option = document.createElement('option');
                         option.value = carrera.id;
-                        option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
+                        if (carrera.acronimo) {
+                            option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
+                        } else {
+                            option.textContent = carrera.nombre;
+                        }
                         carreraSelect.appendChild(option);
                     });
+
+                    // Mostrar campos adicionales según categoría
+                    if (categoria === 'Escuela') {
+                        divGrado.style.display = 'block';
+                    } else if (categoria === 'Tecnológico' || categoria === 'Pedagógico') {
+                        divSemestre.style.display = 'block';
+                        actualizarSemestres(categoria);
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     carreraSelect.innerHTML = '<option value="">Error al cargar carreras</option>';
                 });
-
-            // Mostrar semestres o grados según categoría
-            if (categoria === 'Escuela') {
-                divGrado.style.display = 'block';
-                divSemestre.style.display = 'none';
-            } else {
-                divSemestre.style.display = 'block';
-                divGrado.style.display = 'none';
-                actualizarSemestres(categoria);
-            }
         }
     }
 
@@ -298,55 +299,59 @@
     // Actualizar grados según la carrera seleccionada (solo para Escuela)
     function actualizarCamposSegunCarrera() {
         const categoria = document.getElementById('categoria').value;
-        
+
         if (categoria === 'Escuela') {
             const carreraSelect = document.getElementById('carrera_id');
-            const carreraId = carreraSelect.value;
             const carreraOption = carreraSelect.options[carreraSelect.selectedIndex];
-            const carreraNombre = carreraOption.textContent.split('(')[0].trim();
+            const carreraNombre = carreraOption.textContent.trim();
 
             const gradoSelect = document.getElementById('grado');
             gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
 
-            // Obtener grados según el nivel escolar
-            const grados = configuracion['Escuela'].grados[carreraNombre];
-
-            if (grados === null) {
-                // Inicial: sin grados, solo edad
+            // Si la carrera es de tipo años (Inicial)
+            if (carreraNombre.includes('años')) {
                 document.getElementById('div_grado').style.display = 'none';
-                gradoSelect.value = '';
-            } else if (grados) {
-                // Primaria o Secundaria: mostrar grados
+            } else if (carreraNombre.includes('Primaria')) {
+                // Mostrar grados de primaria
                 document.getElementById('div_grado').style.display = 'block';
-                grados.forEach(grado => {
+                for (let i = 1; i <= 6; i++) {
                     const option = document.createElement('option');
-                    option.value = grado;
-                    option.textContent = grado;
+                    option.value = `${i}°`;
+                    option.textContent = `${i}°`;
                     gradoSelect.appendChild(option);
-                });
+                }
+            } else if (carreraNombre.includes('Secundaria')) {
+                // Mostrar grados de secundaria
+                document.getElementById('div_grado').style.display = 'block';
+                for (let i = 1; i <= 5; i++) {
+                    const option = document.createElement('option');
+                    option.value = `${i}°`;
+                    option.textContent = `${i}°`;
+                    gradoSelect.appendChild(option);
+                }
             }
         }
     }
 
     // Cambiar tipo de salida (manual o automática)
     function cambiarTipoSalida() {
-    const tipo = document.getElementById('tipo_salida').value;
-    const horaSalidaInput = document.getElementById('hora_salida');
+        const tipo = document.getElementById('tipo_salida').value;
+        const horaSalidaInput = document.getElementById('hora_salida');
 
-    if (tipo === 'Automático') {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        horaSalidaInput.value = hours + ':' + minutes + ':' + seconds;
-        horaSalidaInput.disabled = true;
-        horaSalidaInput.style.background = '#f0f0f0';
-    } else if (tipo === 'Manual') {
-        horaSalidaInput.disabled = false;
-        horaSalidaInput.style.background = 'white';
-        horaSalidaInput.value = '';
+        if (tipo === 'Automático') {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            horaSalidaInput.value = hours + ':' + minutes + ':' + seconds;
+            horaSalidaInput.disabled = true;
+            horaSalidaInput.style.background = '#f0f0f0';
+        } else if (tipo === 'Manual') {
+            horaSalidaInput.disabled = false;
+            horaSalidaInput.style.background = 'white';
+            horaSalidaInput.value = '';
+        }
     }
-}
 
     // Mostrar campo de motivo otro
     function mostrarMotivOtro() {
@@ -371,21 +376,20 @@
 
     // Llenar hora entrada automáticamente
     window.addEventListener('load', function() {
-    // Llenar fecha hoy automáticamente
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha').value = today;
-    
-    // Llenar hora entrada automáticamente
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('hora_entrada').value = hours + ':' + minutes;
-});
+        // Llenar fecha hoy automáticamente
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('fecha').value = today;
+
+        // Llenar hora entrada automáticamente
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('hora_entrada').value = hours + ':' + minutes;
+    });
 
     // Validar antes de enviar
     document.getElementById('formAtencion').addEventListener('submit', function(e) {
         // CRÍTICO: Habilitar todos los inputs de cantidad antes de enviar
-        // Los inputs disabled NO se envían en el form
         document.querySelectorAll('.cantidad_input').forEach(input => {
             if (input.value && input.value > 0) {
                 input.disabled = false;
@@ -401,13 +405,7 @@
         const otrosEspecificacion = document.getElementById('otros_especificacion').value;
 
         if (!tipoSalida) {
-            alert('Por favor selecciona el tipo de registro de salida (Manual o Automática)');
-            e.preventDefault();
-            return;
-        }
-
-        if (tipoSalida === 'manual' && !horaSalida) {
-            alert('Por favor ingresa la hora de salida');
+            alert('Por favor selecciona el tipo de registro de salida');
             e.preventDefault();
             return;
         }
@@ -418,43 +416,30 @@
             return;
         }
 
-        if (categoria === 'Otros' && !otrosEspecificacion) {
-            alert('Por favor especifica el área o cargo');
-            e.preventDefault();
-            return;
-        }
-
-        if (categoria === 'Escuela') {
-            if (!carreraId) {
-                alert('Por favor selecciona un nivel escolar');
+        if (categoria === 'Otros') {
+            if (!otrosEspecificacion) {
+                alert('Por favor especifica el área o cargo');
                 e.preventDefault();
                 return;
             }
-            // Validar que si tiene grado, lo haya seleccionado
-            const carreraOption = document.getElementById('carrera_id').options[document.getElementById('carrera_id').selectedIndex];
-            const carreraNombre = carreraOption.textContent.split('(')[0].trim();
-            if (configuracion['Escuela'].grados[carreraNombre] !== null && !grado) {
-                alert('Por favor selecciona un grado');
-                e.preventDefault();
-                return;
-            }
-        } else if (categoria !== 'Otros') {
+        } else {
             if (!carreraId) {
                 alert('Por favor selecciona una carrera');
                 e.preventDefault();
                 return;
             }
-            if (!semestre) {
-                alert('Por favor selecciona un semestre');
-                e.preventDefault();
-                return;
+
+            if (categoria === 'Tecnológico' || categoria === 'Pedagógico') {
+                if (!semestre) {
+                    alert('Por favor selecciona un semestre');
+                    e.preventDefault();
+                    return;
+                }
             }
         }
     });
 
-    // ============================================
     // AUTO-COMPLETADO AL BUSCAR POR DNI
-    // ============================================
     const dniInput = document.getElementById('dni');
     if (dniInput) {
         dniInput.addEventListener('blur', function() {
@@ -473,10 +458,9 @@
         const dni = document.getElementById('dni').value;
 
         if (!dni || dni.length < 8) {
-            return; // No buscar si el DNI es muy corto
+            return;
         }
 
-        // Mostrar indicador de carga
         document.getElementById('nombre').value = 'Buscando...';
         document.getElementById('apellido').value = 'Buscando...';
 
@@ -484,40 +468,32 @@
             .then(response => response.json())
             .then(data => {
                 if (data.encontrado) {
-                    // Llenar campos automáticamente
                     document.getElementById('nombre').value = data.nombre;
                     document.getElementById('apellido').value = data.apellido;
+                    document.getElementById('edad').value = data.edad || '';
 
-                    // Mostrar mensaje de éxito
-                    alert('✅ Paciente encontrado: ' + data.nombre + ' ' + data.apellido);
+                    if (data.categoria) {
+                        document.getElementById('categoria').value = data.categoria;
+                        cargarCarreras();
 
-                    // Si tiene carrera, auto-seleccionar
-                    if (data.carrera_id) {
-                        // Primero seleccionar la categoría
-                        if (data.categoria) {
-                            document.getElementById('categoria').value = data.categoria;
-                            // Cargar carreras de esa categoría
-                            cargarCarreras();
-                            // Después de un pequeño delay, seleccionar la carrera
-                            setTimeout(() => {
+                        setTimeout(() => {
+                            if (data.carrera_id) {
                                 document.getElementById('carrera_id').value = data.carrera_id;
-                            }, 500);
-                        }
+                                actualizarCamposSegunCarrera();
+                            }
+                        }, 500);
                     }
 
-                    // Si tiene edad, auto-completar
-                    if (data.edad) {
-                        document.getElementById('edad').value = data.edad;
+                    if (data.otros_especificacion) {
+                        document.getElementById('otros_especificacion').value = data.otros_especificacion;
                     }
                 } else {
-                    // Limpiar campos
                     document.getElementById('nombre').value = '';
                     document.getElementById('apellido').value = '';
-                    console.log('Paciente no encontrado, puede registrarlo normalmente');
                 }
             })
             .catch(error => {
-                console.error('Error al buscar paciente:', error);
+                console.error('Error:', error);
                 document.getElementById('nombre').value = '';
                 document.getElementById('apellido').value = '';
             });
