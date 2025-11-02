@@ -196,7 +196,9 @@
         'apellido' => $atencion->paciente->apellido ?? '',
         'categoria' => $atencion->paciente && $atencion->paciente->carrera ? $atencion->paciente->carrera->categoria : '',
         'carrera_id' => $atencion->paciente->carrera_id ?? '',
-        'otros_especificacion' => $atencion->paciente->otros_especificacion ?? '',
+        'semestre' => $atencion->semestre ?? '',  // Snapshot guardado en la atención
+        'grado' => $atencion->grado ?? '',        // Snapshot guardado en la atención
+        'otros_especificacion' => $atencion->otros_especificacion ?? '',  // Snapshot guardado en la atención
         'edad' => $atencion->paciente->edad ?? '',
         'motivo_id' => $atencion->motivo_id ?? '',
         'motivo_otro' => $atencion->motivo_otro ?? '',

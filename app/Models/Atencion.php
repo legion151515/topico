@@ -6,7 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Atencion extends Model
 {
-    protected $fillable = ['paciente_id', 'motivo_id', 'motivo_otro', 'fecha', 'hora_entrada', 'hora_salida', 'tipo_salida', 'token_firma', 'observaciones'];
+    protected $fillable = [
+        'paciente_id',
+        'semestre',
+        'grado',
+        'otros_especificacion',
+        'motivo_id',
+        'motivo_otro',
+        'fecha',
+        'hora_entrada',
+        'hora_salida',
+        'tipo_salida',
+        'token_firma',
+        'observaciones'
+    ];
 
     public function paciente()
     {

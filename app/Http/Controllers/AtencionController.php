@@ -150,15 +150,19 @@ class AtencionController extends Controller
             ->withErrors(['error' => 'Error al guardar paciente: ' . $e->getMessage()]);
     }
     
-    // Crear atención
+    // Crear atención (guardando snapshot de datos del paciente)
     $atencion = Atencion::create([
         'paciente_id' => $paciente->id,
+        'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
+        'grado' => $request->grado,                // Snapshot: grado al momento de la atención
+        'otros_especificacion' => $request->otros_especificacion, // Snapshot: especificación para categoría "Otros"
         'motivo_id' => $request->motivo_id,
         'motivo_otro' => $request->motivo_otro,
         'fecha' => $request->fecha ?? now()->format('Y-m-d'),
         'hora_entrada' => $request->hora_entrada,
         'hora_salida' => $request->hora_salida,
         'tipo_salida' => $request->tipo_salida ?? 'Manual',
+        'observaciones' => $request->observaciones,
     ]);
     
     // Asociar medicamentos y descontar del stock automáticamente
@@ -239,8 +243,11 @@ class AtencionController extends Controller
             ]);
         }
 
-        // Actualizar atención (solo campos permitidos)
+        // Actualizar atención (incluyendo snapshot de datos del paciente)
         $atencion->update([
+            'semestre' => $request->semestre,
+            'grado' => $request->grado,
+            'otros_especificacion' => $request->otros_especificacion,
             'motivo_id' => $request->motivo_id,
             'motivo_otro' => $request->motivo_otro,
             'fecha' => $request->fecha,
