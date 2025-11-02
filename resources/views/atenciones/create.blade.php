@@ -13,6 +13,18 @@
 
         <div style="padding: 30px;">
 
+            <!-- ERRORES -->
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <strong><i class="fas fa-exclamation-triangle"></i> Errores:</strong>
+                    <ul style="margin-bottom: 0; margin-top: 10px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- TIEMPO DE ATENCIÓN - PRIMERO Y OBLIGATORIO -->
             <h3 style="color: #1e3c72; margin-bottom: 20px; font-size: 16px; font-weight: 600; background: #fff3cd; padding: 15px; border-left: 4px solid #ff9800; border-radius: 4px;">
                 <i class="fas fa-clock"></i> ⚠️ TIEMPO DE ATENCIÓN - OBLIGATORIO

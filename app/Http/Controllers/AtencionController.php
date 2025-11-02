@@ -28,11 +28,17 @@ class AtencionController extends Controller
     public function store(Request $request)
 {
     // DEBUG COMPLETO
-    \Log::info('=== DEBUG STORE ===');
+    \Log::info('=== DEBUG STORE ATENCIÓN ===');
+    \Log::info('Request COMPLETO:', $request->all());
     \Log::info('Request DNI:', ['dni' => $request->dni]);
     \Log::info('Request Nombre:', ['nombre' => $request->nombre]);
     \Log::info('Request Apellido:', ['apellido' => $request->apellido]);
     \Log::info('Request Edad:', ['edad' => $request->edad]);
+    \Log::info('Request Categoria:', ['categoria' => $request->categoria]);
+    \Log::info('Request Carrera ID:', ['carrera_id' => $request->carrera_id]);
+    \Log::info('Request Otros especificacion:', ['otros_especificacion' => $request->otros_especificacion]);
+    \Log::info('Request Hora Salida:', ['hora_salida' => $request->hora_salida]);
+    \Log::info('Request Tipo Salida:', ['tipo_salida' => $request->tipo_salida]);
 
     // Validar que el DNI no esté vacío
     if (empty($request->dni)) {
@@ -69,8 +75,15 @@ class AtencionController extends Controller
             \Log::info('Paciente creado correctamente', ['id' => $paciente->id]);
         }
     } catch (\Exception $e) {
-        \Log::error('Error en paciente:', ['error' => $e->getMessage()]);
-        return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        \Log::error('ERROR CRÍTICO en paciente:', [
+            'mensaje' => $e->getMessage(),
+            'linea' => $e->getLine(),
+            'archivo' => $e->getFile(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['error' => 'Error al guardar paciente: ' . $e->getMessage()]);
     }
     
     // Crear atención

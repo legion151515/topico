@@ -27,9 +27,8 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Paciente</th>
-                            <th>DNI</th>
-                            <th>Carrera</th>
                             <th>Acrónimo</th>
+                            <th>DNI</th>
                             <th>Motivo</th>
                             <th>Hora Entrada</th>
                             <th>Hora Salida</th>
@@ -48,16 +47,6 @@
                                         <span class="text-muted">N/A</span>
                                     @endif
                                 </td>
-                                <td><strong>{{ $atencion->paciente->dni ?? 'N/A' }}</strong></td>
-                                <td>
-                                    @if($atencion->paciente && $atencion->paciente->carrera)
-                                        {{ $atencion->paciente->carrera->nombre }}
-                                    @elseif($atencion->paciente && $atencion->paciente->otros_especificacion)
-                                        {{ $atencion->paciente->otros_especificacion }}
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
                                 <td>
                                     @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
                                         <span class="badge badge-secondary">{{ $atencion->paciente->carrera->acronimo }}</span>
@@ -65,6 +54,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                <td><strong>{{ $atencion->paciente->dni ?? 'N/A' }}</strong></td>
                                 <td>
                                     @if($atencion->motivo)
                                         <span class="badge badge-info">{{ $atencion->motivo->nombre }}</span>
