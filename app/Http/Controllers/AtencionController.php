@@ -28,16 +28,86 @@ class AtencionController extends Controller
     public function store(Request $request)
 {
     // DEBUG COMPLETO
-    \Log::info('=== DEBUG STORE ===');
+    \Log::info('=== DEBUG STORE ATENCIÓN ===');
+    \Log::info('Request COMPLETO:', $request->all());
     \Log::info('Request DNI:', ['dni' => $request->dni]);
     \Log::info('Request Nombre:', ['nombre' => $request->nombre]);
     \Log::info('Request Apellido:', ['apellido' => $request->apellido]);
     \Log::info('Request Edad:', ['edad' => $request->edad]);
+    \Log::info('Request Categoria:', ['categoria' => $request->categoria]);
+    \Log::info('Request Carrera ID (RAW):', [
+        'carrera_id' => $request->carrera_id,
+        'tipo' => gettype($request->carrera_id),
+        'es_numerico' => is_numeric($request->carrera_id)
+    ]);
+    \Log::info('Request Otros especificacion:', ['otros_especificacion' => $request->otros_especificacion]);
+    \Log::info('Request Hora Salida:', ['hora_salida' => $request->hora_salida]);
+    \Log::info('Request Tipo Salida:', ['tipo_salida' => $request->tipo_salida]);
 
     // Validar que el DNI no esté vacío
     if (empty($request->dni)) {
-        return redirect()->back()->withErrors(['dni' => 'El DNI es obligatorio']);
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['dni' => 'El DNI es obligatorio']);
     }
+
+    // ============================================
+    // VALIDACIÓN Y NORMALIZACIÓN DE CARRERA_ID
+    // ============================================
+    $carreraId = null;
+
+    if ($request->categoria === 'Otros') {
+        // Para "Otros", carrera_id debe ser NULL
+        $carreraId = null;
+        \Log::info('Categoría "Otros" detectada, carrera_id = NULL');
+
+    } else {
+        // Para otras categorías, validar carrera_id
+        if (empty($request->carrera_id)) {
+            \Log::error('ERROR: carrera_id vacío para categoría que no es "Otros"');
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['carrera_id' => 'Debe seleccionar una carrera para la categoría ' . $request->categoria]);
+        }
+
+        // CRÍTICO: Validar que carrera_id sea NUMÉRICO
+        if (!is_numeric($request->carrera_id)) {
+            \Log::error('ERROR CRÍTICO: carrera_id NO ES NUMÉRICO', [
+                'carrera_id' => $request->carrera_id,
+                'tipo' => gettype($request->carrera_id)
+            ]);
+
+            // Intentar buscar la carrera por nombre como fallback
+            \Log::info('Intentando buscar carrera por nombre...');
+            $carrera = \App\Models\Carrera::where('nombre', $request->carrera_id)
+                ->orWhere('nombre', 'LIKE', '%' . $request->carrera_id . '%')
+                ->first();
+
+            if ($carrera) {
+                $carreraId = $carrera->id;
+                \Log::info('Carrera encontrada por nombre', ['id' => $carreraId, 'nombre' => $carrera->nombre]);
+            } else {
+                \Log::error('No se pudo encontrar la carrera por nombre');
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['carrera_id' => 'ERROR: El sistema recibió un nombre de carrera ("' . $request->carrera_id . '") en lugar de un ID. Por favor, recarga la página y vuelve a intentar. Si el problema persiste, contacta al administrador.']);
+            }
+        } else {
+            $carreraId = (int) $request->carrera_id;
+            \Log::info('carrera_id validado como numérico', ['id' => $carreraId]);
+
+            // Verificar que la carrera exista en la BD
+            $carreraExiste = \App\Models\Carrera::find($carreraId);
+            if (!$carreraExiste) {
+                \Log::error('ERROR: carrera_id no existe en la BD', ['id' => $carreraId]);
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['carrera_id' => 'La carrera seleccionada no existe. Por favor, recarga la página y vuelve a intentar.']);
+            }
+        }
+    }
+
+    \Log::info('carrera_id FINAL después de validación:', ['carrera_id' => $carreraId]);
 
     try {
         // Buscar paciente
@@ -50,7 +120,7 @@ class AtencionController extends Controller
             $paciente->update([
                 'nombre' => $request->nombre ?? $paciente->nombre,
                 'apellido' => $request->apellido ?? $paciente->apellido,
-                'carrera_id' => $request->carrera_id ?? $paciente->carrera_id,
+                'carrera_id' => $carreraId ?? $paciente->carrera_id,
                 'otros_especificacion' => $request->otros_especificacion ?? $paciente->otros_especificacion,
                 'edad' => $request->edad ?? $paciente->edad
             ]);
@@ -62,15 +132,22 @@ class AtencionController extends Controller
                 'dni' => $request->dni,
                 'nombre' => $request->nombre ?? 'SIN NOMBRE',
                 'apellido' => $request->apellido ?? 'SIN APELLIDO',
-                'carrera_id' => $request->carrera_id,
+                'carrera_id' => $carreraId,
                 'otros_especificacion' => $request->otros_especificacion,
                 'edad' => $request->edad ?? 0
             ]);
             \Log::info('Paciente creado correctamente', ['id' => $paciente->id]);
         }
     } catch (\Exception $e) {
-        \Log::error('Error en paciente:', ['error' => $e->getMessage()]);
-        return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        \Log::error('ERROR CRÍTICO en paciente:', [
+            'mensaje' => $e->getMessage(),
+            'linea' => $e->getLine(),
+            'archivo' => $e->getFile(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['error' => 'Error al guardar paciente: ' . $e->getMessage()]);
     }
     
     // Crear atención

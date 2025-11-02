@@ -27,6 +27,7 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Paciente</th>
+                            <th>Acrónimo</th>
                             <th>DNI</th>
                             <th>Motivo</th>
                             <th>Hora Entrada</th>
@@ -44,6 +45,13 @@
                                         {{ $atencion->paciente->nombre }} {{ $atencion->paciente->apellido }}
                                     @else
                                         <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
+                                        <span class="badge badge-secondary">{{ $atencion->paciente->carrera->acronimo }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td><strong>{{ $atencion->paciente->dni ?? 'N/A' }}</strong></td>
