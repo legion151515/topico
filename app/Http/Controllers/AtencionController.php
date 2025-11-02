@@ -78,9 +78,10 @@ class AtencionController extends Controller
         'motivo_otro' => $request->motivo_otro,
         'fecha' => $request->fecha ?? now()->format('Y-m-d'),
         'hora_entrada' => $request->hora_entrada,
-        
+
         'hora_salida' => \Carbon\Carbon::parse($request->hora_salida)->subHours(5)->format('H:i:s'),
         'tipo_salida' => $request->tipo_salida ?? 'Manual',
+        'observaciones' => $request->observaciones,
     ]);
     
     if ($request->has('medicamentos')) {
