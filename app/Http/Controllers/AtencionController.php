@@ -155,6 +155,7 @@ class AtencionController extends Controller
     // Crear atención (guardando snapshot de datos del paciente)
     $atencion = Atencion::create([
         'paciente_id' => $paciente->id,
+        'categoria' => $request->categoria,        // Snapshot: categoría al momento de la atención
         'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
         'grado' => $request->grado,                // Snapshot: grado al momento de la atención
         'nivel_escuela' => $request->nivel_escuela, // Snapshot: nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)
@@ -259,6 +260,7 @@ class AtencionController extends Controller
 
         // Actualizar atención (incluyendo snapshot de datos del paciente)
         $atencion->update([
+            'categoria' => $request->categoria,
             'semestre' => $request->semestre,
             'grado' => $request->grado,
             'nivel_escuela' => $request->nivel_escuela,

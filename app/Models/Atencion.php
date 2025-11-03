@@ -8,6 +8,7 @@ class Atencion extends Model
 {
     protected $fillable = [
         'paciente_id',
+        'categoria',
         'semestre',
         'grado',
         'nivel_escuela',

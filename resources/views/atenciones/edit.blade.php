@@ -213,7 +213,7 @@
         'dni' => $atencion->paciente->dni ?? '',
         'nombre' => $atencion->paciente->nombre ?? '',
         'apellido' => $atencion->paciente->apellido ?? '',
-        'categoria' => $atencion->paciente && $atencion->paciente->carrera ? $atencion->paciente->carrera->categoria : '',
+        'categoria' => $atencion->categoria ?? '',  // Snapshot guardado en la atención
         'carrera_id' => $atencion->paciente->carrera_id ?? '',
         'semestre' => $atencion->semestre ?? '',  // Snapshot guardado en la atención
         'grado' => $atencion->grado ?? '',        // Snapshot guardado en la atención
