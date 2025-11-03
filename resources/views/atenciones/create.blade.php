@@ -582,6 +582,12 @@
             }
         });
 
+        // CRÍTICO: Habilitar hora_salida si está disabled (cuando es automático)
+        const horaSalidaInput = document.getElementById('hora_salida');
+        if (horaSalidaInput && horaSalidaInput.disabled) {
+            horaSalidaInput.disabled = false;
+        }
+
         const tipoSalida = document.getElementById('tipo_salida').value;
         const horaSalida = document.getElementById('hora_salida').value;
         const categoria = document.getElementById('categoria').value;
