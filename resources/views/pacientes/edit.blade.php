@@ -154,13 +154,13 @@
         'nombre' => $paciente->nombre,
         'apellido' => $paciente->apellido,
         'edad' => $paciente->edad,
-        'categoria' => $ultimaAtencion->categoria ?? ($paciente->carrera ? $paciente->carrera->categoria : ''),
+        'categoria' => $paciente->nivel ? $paciente->nivel->categoria : ($paciente->carrera ? $paciente->carrera->categoria : ''),
         'carrera_id' => $paciente->carrera_id ?? '',
-        'semestre' => $ultimaAtencion->semestre ?? '',
-        'grado' => $ultimaAtencion->grado ?? '',
-        'nivel_escuela' => $ultimaAtencion->nivel_escuela ?? '',
-        'anios' => $ultimaAtencion->anios ?? '',
-        'otros_especificacion' => $ultimaAtencion->otros_especificacion ?? ($paciente->otros_especificacion ?? ''),
+        'semestre' => '',
+        'grado' => $paciente->nivel->grado ?? '',
+        'nivel_escuela' => $paciente->nivel->nivel_escuela ?? '',
+        'anios' => $paciente->nivel->anios ?? '',
+        'otros_especificacion' => $paciente->nivel ? $paciente->nivel->otros_especificacion : ($paciente->otros_especificacion ?? ''),
     ]) !!};
 
     console.log('✅ Datos del paciente cargados:', datosPaciente);

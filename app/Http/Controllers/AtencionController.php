@@ -53,26 +53,14 @@ class AtencionController extends Controller
     }
 
     // ============================================
-    // VALIDACIÓN Y NORMALIZACIÓN DE CARRERA_ID Y NIVEL_ID
+    // VALIDACIÓN Y NORMALIZACIÓN DE CARRERA_ID
     // ============================================
     $carreraId = null;
-    $nivelId = null;
 
-    if ($request->categoria === 'Escuela') {
-        // Para Escuela: buscar nivel por nombre (INICIAL, PRIMARIA, SECUNDARIA)
+    if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
+        // Para Escuela y Otros, carrera_id es NULL (se maneja en tabla niveles)
         $carreraId = null;
-        if ($request->nivel_escuela) {
-            $nivel = Nivel::where('nombre', $request->nivel_escuela)->where('tipo', 'Escuela')->first();
-            $nivelId = $nivel ? $nivel->id : null;
-        }
-        \Log::info('Categoría "Escuela" detectada, carrera_id = NULL, nivel_id = ' . $nivelId);
-
-    } elseif ($request->categoria === 'Otros') {
-        // Para Otros: buscar nivel tipo "Otros"
-        $carreraId = null;
-        $nivel = Nivel::where('nombre', 'OTROS')->where('tipo', 'Otros')->first();
-        $nivelId = $nivel ? $nivel->id : null;
-        \Log::info('Categoría "Otros" detectada, carrera_id = NULL, nivel_id = ' . $nivelId);
+        \Log::info('Categoría "' . $request->categoria . '" detectada, carrera_id = NULL');
 
     } else {
         // Para Tecnológico y Pedagógico, validar carrera_id
@@ -134,7 +122,6 @@ class AtencionController extends Controller
                 'nombre' => $request->nombre ?? $paciente->nombre,
                 'apellido' => $request->apellido ?? $paciente->apellido,
                 'carrera_id' => $carreraId ?? $paciente->carrera_id,
-                'nivel_id' => $nivelId ?? $paciente->nivel_id,
                 'otros_especificacion' => $request->otros_especificacion ?? $paciente->otros_especificacion,
                 'edad' => $request->edad ?? $paciente->edad
             ]);
@@ -147,11 +134,25 @@ class AtencionController extends Controller
                 'nombre' => $request->nombre ?? 'SIN NOMBRE',
                 'apellido' => $request->apellido ?? 'SIN APELLIDO',
                 'carrera_id' => $carreraId,
-                'nivel_id' => $nivelId,
                 'otros_especificacion' => $request->otros_especificacion,
                 'edad' => $request->edad ?? 0
             ]);
             \Log::info('Paciente creado correctamente', ['id' => $paciente->id]);
+        }
+
+        // Si es Escuela u Otros, crear/actualizar registro en tabla niveles
+        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
+            $paciente->nivel()->updateOrCreate(
+                ['paciente_id' => $paciente->id],
+                [
+                    'categoria' => $request->categoria,
+                    'nivel_escuela' => $request->nivel_escuela,
+                    'grado' => $request->grado,
+                    'anios' => $request->anios,
+                    'otros_especificacion' => $request->otros_especificacion
+                ]
+            );
+            \Log::info('Registro en tabla niveles creado/actualizado');
         }
     } catch (\Exception $e) {
         \Log::error('ERROR CRÍTICO en paciente:', [
@@ -169,7 +170,6 @@ class AtencionController extends Controller
     $atencion = Atencion::create([
         'paciente_id' => $paciente->id,
         'categoria' => $request->categoria,        // Snapshot: categoría al momento de la atención
-        'nivel_id' => $nivelId,                    // Snapshot: nivel_id para Escuela/Otros
         'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
         'grado' => $request->grado,                // Snapshot: grado al momento de la atención
         'nivel_escuela' => $request->nivel_escuela, // Snapshot: nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)

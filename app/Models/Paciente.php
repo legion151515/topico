@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Paciente extends Model
 {
-    protected $fillable = ['dni', 'nombre', 'apellido', 'edad', 'carrera_id', 'nivel_id', 'otros_especificacion'];
+    protected $fillable = ['dni', 'nombre', 'apellido', 'edad', 'carrera_id', 'otros_especificacion'];
 
     public function atenciones()
     {
@@ -18,8 +18,11 @@ class Paciente extends Model
         return $this->belongsTo(Carrera::class);
     }
 
+    /**
+     * Relación: Un paciente tiene UN nivel (para categorías Escuela/Otros)
+     */
     public function nivel()
     {
-        return $this->belongsTo(Nivel::class);
+        return $this->hasOne(Nivel::class);
     }
 }

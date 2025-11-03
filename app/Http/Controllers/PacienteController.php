@@ -7,7 +7,6 @@ use App\Models\Carrera;
 use App\Models\Atencion;
 use App\Models\Nivel;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class PacienteController extends Controller
 {
@@ -26,8 +25,7 @@ class PacienteController extends Controller
     public function create()
     {
         $carreras = Carrera::all();
-        $niveles = Nivel::all();
-        return view('pacientes.create', compact('carreras', 'niveles'));
+        return view('pacientes.create', compact('carreras'));
     }
 
     /**
@@ -35,26 +33,10 @@ class PacienteController extends Controller
      */
     public function store(Request $request)
     {
-        // Determinar carrera_id y nivel_id según categoría
+        // Determinar carrera_id según categoría
         $carreraId = null;
-        $nivelId = null;
-
-        if ($request->categoria === 'Escuela') {
-            // Para Escuela: buscar nivel por nombre (INICIAL, PRIMARIA, SECUNDARIA)
-            $carreraId = null;
-            if ($request->nivel_escuela) {
-                $nivel = Nivel::where('nombre', $request->nivel_escuela)->where('tipo', 'Escuela')->first();
-                $nivelId = $nivel ? $nivel->id : null;
-            }
-        } elseif ($request->categoria === 'Otros') {
-            // Para Otros: buscar nivel tipo "Otros"
-            $carreraId = null;
-            $nivel = Nivel::where('nombre', 'OTROS')->where('tipo', 'Otros')->first();
-            $nivelId = $nivel ? $nivel->id : null;
-        } else {
-            // Para Tecnológico y Pedagógico: usar carrera_id
+        if ($request->categoria === 'Tecnológico' || $request->categoria === 'Pedagógico') {
             $carreraId = $request->carrera_id;
-            $nivelId = null;
         }
 
         $validated = $request->validate([
@@ -65,27 +47,23 @@ class PacienteController extends Controller
             'otros_especificacion' => 'nullable|max:255'
         ]);
 
-        // Agregar carrera_id y nivel_id determinados
+        // Agregar carrera_id determinado
         $validated['carrera_id'] = $carreraId;
-        $validated['nivel_id'] = $nivelId;
 
         // Crear el paciente
         $paciente = Paciente::create($validated);
 
-        // Crear registro en atencions con la información adicional del paciente
-        Atencion::create([
-            'paciente_id' => $paciente->id,
-            'categoria' => $request->categoria,
-            'nivel_id' => $nivelId,
-            'semestre' => $request->semestre,
-            'grado' => $request->grado,
-            'nivel_escuela' => $request->nivel_escuela,
-            'anios' => $request->anios,
-            'otros_especificacion' => $request->otros_especificacion,
-            'fecha' => Carbon::now()->format('Y-m-d'),
-            'hora_entrada' => Carbon::now()->format('H:i'),
-            'motivo_otro' => 'Registro inicial de paciente'
-        ]);
+        // Si es Escuela u Otros, crear registro en tabla niveles
+        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
+            Nivel::create([
+                'paciente_id' => $paciente->id,
+                'categoria' => $request->categoria,
+                'nivel_escuela' => $request->nivel_escuela,
+                'grado' => $request->grado,
+                'anios' => $request->anios,
+                'otros_especificacion' => $request->otros_especificacion
+            ]);
+        }
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente registrado correctamente');
@@ -107,14 +85,8 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::with(['carrera', 'nivel'])->findOrFail($id);
         $carreras = Carrera::all();
-        $niveles = Nivel::all();
 
-        // Obtener la atención más reciente del paciente para recuperar los datos adicionales
-        $ultimaAtencion = Atencion::where('paciente_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        return view('pacientes.edit', compact('paciente', 'carreras', 'niveles', 'ultimaAtencion'));
+        return view('pacientes.edit', compact('paciente', 'carreras'));
     }
 
     /**
@@ -124,26 +96,10 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::findOrFail($id);
 
-        // Determinar carrera_id y nivel_id según categoría
+        // Determinar carrera_id según categoría
         $carreraId = null;
-        $nivelId = null;
-
-        if ($request->categoria === 'Escuela') {
-            // Para Escuela: buscar nivel por nombre (INICIAL, PRIMARIA, SECUNDARIA)
-            $carreraId = null;
-            if ($request->nivel_escuela) {
-                $nivel = Nivel::where('nombre', $request->nivel_escuela)->where('tipo', 'Escuela')->first();
-                $nivelId = $nivel ? $nivel->id : null;
-            }
-        } elseif ($request->categoria === 'Otros') {
-            // Para Otros: buscar nivel tipo "Otros"
-            $carreraId = null;
-            $nivel = Nivel::where('nombre', 'OTROS')->where('tipo', 'Otros')->first();
-            $nivelId = $nivel ? $nivel->id : null;
-        } else {
-            // Para Tecnológico y Pedagógico: usar carrera_id
+        if ($request->categoria === 'Tecnológico' || $request->categoria === 'Pedagógico') {
             $carreraId = $request->carrera_id;
-            $nivelId = null;
         }
 
         $validated = $request->validate([
@@ -154,26 +110,24 @@ class PacienteController extends Controller
             'otros_especificacion' => 'nullable|max:255'
         ]);
 
-        // Agregar carrera_id y nivel_id determinados
+        // Agregar carrera_id determinado
         $validated['carrera_id'] = $carreraId;
-        $validated['nivel_id'] = $nivelId;
 
         $paciente->update($validated);
 
-        // Crear registro en atencions con la información actualizada del paciente
-        Atencion::create([
-            'paciente_id' => $paciente->id,
-            'categoria' => $request->categoria,
-            'nivel_id' => $nivelId,
-            'semestre' => $request->semestre,
-            'grado' => $request->grado,
-            'nivel_escuela' => $request->nivel_escuela,
-            'anios' => $request->anios,
-            'otros_especificacion' => $request->otros_especificacion,
-            'fecha' => Carbon::now()->format('Y-m-d'),
-            'hora_entrada' => Carbon::now()->format('H:i'),
-            'motivo_otro' => 'Actualización de datos del paciente'
-        ]);
+        // Si es Escuela u Otros, actualizar o crear registro en tabla niveles
+        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
+            $paciente->nivel()->updateOrCreate(
+                ['paciente_id' => $paciente->id],
+                [
+                    'categoria' => $request->categoria,
+                    'nivel_escuela' => $request->nivel_escuela,
+                    'grado' => $request->grado,
+                    'anios' => $request->anios,
+                    'otros_especificacion' => $request->otros_especificacion
+                ]
+            );
+        }
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente actualizado correctamente');
