@@ -6,13 +6,14 @@ use App\Models\Atencion;
 use App\Models\Paciente;
 use App\Models\MotivoConsulta;
 use App\Models\Medicamento;
+use App\Models\Nivel;
 use Illuminate\Http\Request;
 
 class AtencionController extends Controller
 {
     public function index()
     {
-        $atenciones = Atencion::with(['paciente.carrera', 'motivo', 'medicamentos'])
+        $atenciones = Atencion::with(['paciente.carrera', 'paciente.nivel', 'motivo', 'medicamentos'])
             ->orderBy('created_at', 'desc')
             ->paginate(5);
         return view('atenciones.index', compact('atenciones'));
@@ -52,16 +53,26 @@ class AtencionController extends Controller
     }
 
     // ============================================
-    // VALIDACIÓN Y NORMALIZACIÓN DE CARRERA_ID
+    // VALIDACIÓN Y NORMALIZACIÓN DE CARRERA_ID Y NIVEL_ID
     // ============================================
     $carreraId = null;
+    $nivelId = null;
 
-    if ($request->categoria === 'Otros' || $request->categoria === 'Escuela') {
-        // Para "Otros" y "Escuela", carrera_id debe ser NULL
-        // "Otros" usa otros_especificacion
-        // "Escuela" usa nivel_escuela
+    if ($request->categoria === 'Escuela') {
+        // Para Escuela: buscar nivel por nombre (INICIAL, PRIMARIA, SECUNDARIA)
         $carreraId = null;
-        \Log::info('Categoría "' . $request->categoria . '" detectada, carrera_id = NULL');
+        if ($request->nivel_escuela) {
+            $nivel = Nivel::where('nombre', $request->nivel_escuela)->where('tipo', 'Escuela')->first();
+            $nivelId = $nivel ? $nivel->id : null;
+        }
+        \Log::info('Categoría "Escuela" detectada, carrera_id = NULL, nivel_id = ' . $nivelId);
+
+    } elseif ($request->categoria === 'Otros') {
+        // Para Otros: buscar nivel tipo "Otros"
+        $carreraId = null;
+        $nivel = Nivel::where('nombre', 'OTROS')->where('tipo', 'Otros')->first();
+        $nivelId = $nivel ? $nivel->id : null;
+        \Log::info('Categoría "Otros" detectada, carrera_id = NULL, nivel_id = ' . $nivelId);
 
     } else {
         // Para Tecnológico y Pedagógico, validar carrera_id
@@ -123,6 +134,7 @@ class AtencionController extends Controller
                 'nombre' => $request->nombre ?? $paciente->nombre,
                 'apellido' => $request->apellido ?? $paciente->apellido,
                 'carrera_id' => $carreraId ?? $paciente->carrera_id,
+                'nivel_id' => $nivelId ?? $paciente->nivel_id,
                 'otros_especificacion' => $request->otros_especificacion ?? $paciente->otros_especificacion,
                 'edad' => $request->edad ?? $paciente->edad
             ]);
@@ -135,6 +147,7 @@ class AtencionController extends Controller
                 'nombre' => $request->nombre ?? 'SIN NOMBRE',
                 'apellido' => $request->apellido ?? 'SIN APELLIDO',
                 'carrera_id' => $carreraId,
+                'nivel_id' => $nivelId,
                 'otros_especificacion' => $request->otros_especificacion,
                 'edad' => $request->edad ?? 0
             ]);
@@ -156,6 +169,7 @@ class AtencionController extends Controller
     $atencion = Atencion::create([
         'paciente_id' => $paciente->id,
         'categoria' => $request->categoria,        // Snapshot: categoría al momento de la atención
+        'nivel_id' => $nivelId,                    // Snapshot: nivel_id para Escuela/Otros
         'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
         'grado' => $request->grado,                // Snapshot: grado al momento de la atención
         'nivel_escuela' => $request->nivel_escuela, // Snapshot: nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)

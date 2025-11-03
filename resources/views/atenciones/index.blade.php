@@ -49,9 +49,11 @@
                                 </td>
                                 <td>
                                     @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
-                                        <span class="badge badge-secondary">{{ $atencion->paciente->carrera->acronimo }}</span>
+                                        <span class="badge badge-info">{{ $atencion->paciente->carrera->acronimo }}</span>
+                                    @elseif($atencion->paciente && $atencion->paciente->nivel)
+                                        <span class="badge badge-success">{{ $atencion->paciente->nivel->acronimo }}</span>
                                     @elseif($atencion->categoria)
-                                        <span class="badge badge-info">{{ $atencion->categoria }}</span>
+                                        <span class="badge badge-secondary">{{ $atencion->categoria }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif

@@ -46,8 +46,11 @@
                             @if($paciente->carrera)
                                 <span class="badge badge-info">{{ $paciente->carrera->acronimo }}</span>
                                 {{ $paciente->carrera->nombre }}
+                            @elseif($paciente->nivel)
+                                <span class="badge badge-success">{{ $paciente->nivel->acronimo }}</span>
+                                {{ $paciente->nivel->nombre }}
                             @else
-                                <span class="badge badge-secondary">{{ $paciente->otros_especificacion ?? 'N/A' }}</span>
+                                <span class="badge badge-secondary">{{ $paciente->otros_especificacion ?? '-' }}</span>
                             @endif
                         </td>
                         <td>
