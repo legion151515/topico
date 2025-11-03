@@ -53,17 +53,16 @@ class PacienteController extends Controller
         // Crear el paciente
         $paciente = Paciente::create($validated);
 
-        // Si es Escuela u Otros, crear registro en tabla niveles
-        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
-            Nivel::create([
-                'paciente_id' => $paciente->id,
-                'categoria' => $request->categoria,
-                'nivel_escuela' => $request->nivel_escuela,
-                'grado' => $request->grado,
-                'anios' => $request->anios,
-                'otros_especificacion' => $request->otros_especificacion
-            ]);
-        }
+        // Crear registro en tabla niveles para TODAS las categorías
+        Nivel::create([
+            'paciente_id' => $paciente->id,
+            'categoria' => $request->categoria,
+            'semestre' => $request->semestre,               // Para Tecnológico/Pedagógico
+            'nivel_escuela' => $request->nivel_escuela,     // Para Escuela
+            'grado' => $request->grado,                     // Para Escuela
+            'anios' => $request->anios,                     // Para Escuela
+            'otros_especificacion' => $request->otros_especificacion  // Para Otros
+        ]);
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente registrado correctamente');
@@ -74,7 +73,7 @@ class PacienteController extends Controller
      */
     public function show(string $id)
     {
-        $paciente = Paciente::with(['carrera', 'atenciones.motivo', 'atenciones.medicamentos'])->findOrFail($id);
+        $paciente = Paciente::with(['carrera', 'nivel', 'atenciones.motivo', 'atenciones.medicamentos'])->findOrFail($id);
         return view('pacientes.show', compact('paciente'));
     }
 
@@ -115,19 +114,18 @@ class PacienteController extends Controller
 
         $paciente->update($validated);
 
-        // Si es Escuela u Otros, actualizar o crear registro en tabla niveles
-        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
-            $paciente->nivel()->updateOrCreate(
-                ['paciente_id' => $paciente->id],
-                [
-                    'categoria' => $request->categoria,
-                    'nivel_escuela' => $request->nivel_escuela,
-                    'grado' => $request->grado,
-                    'anios' => $request->anios,
-                    'otros_especificacion' => $request->otros_especificacion
-                ]
-            );
-        }
+        // Actualizar o crear registro en tabla niveles para TODAS las categorías
+        $paciente->nivel()->updateOrCreate(
+            ['paciente_id' => $paciente->id],
+            [
+                'categoria' => $request->categoria,
+                'semestre' => $request->semestre,               // Para Tecnológico/Pedagógico
+                'nivel_escuela' => $request->nivel_escuela,     // Para Escuela
+                'grado' => $request->grado,                     // Para Escuela
+                'anios' => $request->anios,                     // Para Escuela
+                'otros_especificacion' => $request->otros_especificacion  // Para Otros
+            ]
+        );
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente actualizado correctamente');

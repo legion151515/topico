@@ -11,6 +11,7 @@ class Nivel extends Model
     protected $fillable = [
         'paciente_id',
         'categoria',
+        'semestre',
         'nivel_escuela',
         'grado',
         'anios',
@@ -23,5 +24,13 @@ class Nivel extends Model
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
+    }
+
+    /**
+     * Relación: Un nivel tiene muchas atenciones (snapshot)
+     */
+    public function atenciones()
+    {
+        return $this->hasMany(Atencion::class);
     }
 }

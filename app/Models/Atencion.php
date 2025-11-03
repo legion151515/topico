@@ -9,6 +9,7 @@ class Atencion extends Model
     protected $fillable = [
         'paciente_id',
         'categoria',
+        'nivel_id',
         'semestre',
         'grado',
         'nivel_escuela',
@@ -32,6 +33,11 @@ class Atencion extends Model
     public function motivo()
     {
         return $this->belongsTo(MotivoConsulta::class, 'motivo_id');
+    }
+
+    public function nivel()
+    {
+        return $this->belongsTo(Nivel::class);
     }
 
     public function medicamentos()

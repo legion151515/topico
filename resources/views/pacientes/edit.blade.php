@@ -156,7 +156,7 @@
         'edad' => $paciente->edad,
         'categoria' => $paciente->nivel ? $paciente->nivel->categoria : ($paciente->carrera ? $paciente->carrera->categoria : ''),
         'carrera_id' => $paciente->carrera_id ?? '',
-        'semestre' => '',
+        'semestre' => $paciente->nivel->semestre ?? '',
         'grado' => $paciente->nivel->grado ?? '',
         'nivel_escuela' => $paciente->nivel->nivel_escuela ?? '',
         'anios' => $paciente->nivel->anios ?? '',

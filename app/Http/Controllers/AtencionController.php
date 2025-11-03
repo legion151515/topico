@@ -140,20 +140,20 @@ class AtencionController extends Controller
             \Log::info('Paciente creado correctamente', ['id' => $paciente->id]);
         }
 
-        // Si es Escuela u Otros, crear/actualizar registro en tabla niveles
-        if ($request->categoria === 'Escuela' || $request->categoria === 'Otros') {
-            $paciente->nivel()->updateOrCreate(
-                ['paciente_id' => $paciente->id],
-                [
-                    'categoria' => $request->categoria,
-                    'nivel_escuela' => $request->nivel_escuela,
-                    'grado' => $request->grado,
-                    'anios' => $request->anios,
-                    'otros_especificacion' => $request->otros_especificacion
-                ]
-            );
-            \Log::info('Registro en tabla niveles creado/actualizado');
-        }
+        // Crear/actualizar registro en tabla niveles para TODAS las categorías
+        $nivel = $paciente->nivel()->updateOrCreate(
+            ['paciente_id' => $paciente->id],
+            [
+                'categoria' => $request->categoria,
+                'semestre' => $request->semestre,               // Para Tecnológico/Pedagógico
+                'nivel_escuela' => $request->nivel_escuela,     // Para Escuela
+                'grado' => $request->grado,                     // Para Escuela
+                'anios' => $request->anios,                     // Para Escuela
+                'otros_especificacion' => $request->otros_especificacion  // Para Otros
+            ]
+        );
+        \Log::info('Registro en tabla niveles creado/actualizado', ['nivel_id' => $nivel->id]);
+
     } catch (\Exception $e) {
         \Log::error('ERROR CRÍTICO en paciente:', [
             'mensaje' => $e->getMessage(),
@@ -165,11 +165,12 @@ class AtencionController extends Controller
             ->withInput()
             ->withErrors(['error' => 'Error al guardar paciente: ' . $e->getMessage()]);
     }
-    
+
     // Crear atención (guardando snapshot de datos del paciente)
     $atencion = Atencion::create([
         'paciente_id' => $paciente->id,
         'categoria' => $request->categoria,        // Snapshot: categoría al momento de la atención
+        'nivel_id' => $nivel->id,                  // Snapshot: nivel_id para mostrar en INDEX
         'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
         'grado' => $request->grado,                // Snapshot: grado al momento de la atención
         'nivel_escuela' => $request->nivel_escuela, // Snapshot: nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)

@@ -31,10 +31,29 @@
                         <th>Carrera/Área:</th>
                         <td>
                             @if($paciente->carrera)
+                                {{-- Tecnológico/Pedagógico: mostrar carrera --}}
                                 <span class="badge badge-info">{{ $paciente->carrera->acronimo }}</span>
                                 {{ $paciente->carrera->nombre }}
+                                @if($paciente->nivel && $paciente->nivel->semestre)
+                                    - Semestre {{ $paciente->nivel->semestre }}
+                                @endif
+                            @elseif($paciente->nivel)
+                                {{-- Escuela/Otros: mostrar desde nivel --}}
+                                @if($paciente->nivel->categoria === 'Escuela')
+                                    <span class="badge badge-success">{{ $paciente->nivel->nivel_escuela ?? 'ESCUELA' }}</span>
+                                    @if($paciente->nivel->grado)
+                                        {{ $paciente->nivel->grado }}° Grado
+                                    @elseif($paciente->nivel->anios)
+                                        {{ $paciente->nivel->anios }} años
+                                    @else
+                                        Escuela
+                                    @endif
+                                @elseif($paciente->nivel->categoria === 'Otros')
+                                    <span class="badge badge-warning">OTROS</span>
+                                    {{ $paciente->nivel->otros_especificacion ?? 'Otros' }}
+                                @endif
                             @else
-                                <span class="badge badge-secondary">{{ $paciente->otros_especificacion ?? 'No especificado' }}</span>
+                                <span class="badge badge-secondary">No especificado</span>
                             @endif
                         </td>
                     </tr>

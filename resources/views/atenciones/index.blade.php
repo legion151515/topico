@@ -48,10 +48,18 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
+                                    @if($atencion->paciente && $atencion->paciente->carrera)
+                                        {{-- Tecnológico/Pedagógico: mostrar acrónimo de carrera --}}
                                         <span class="badge badge-info">{{ $atencion->paciente->carrera->acronimo }}</span>
                                     @elseif($atencion->paciente && $atencion->paciente->nivel)
-                                        <span class="badge badge-success">{{ $atencion->paciente->nivel->acronimo }}</span>
+                                        {{-- Escuela/Otros: mostrar desde nivel --}}
+                                        @if($atencion->paciente->nivel->categoria === 'Escuela')
+                                            <span class="badge badge-success">{{ $atencion->paciente->nivel->nivel_escuela ?? 'ESC' }}</span>
+                                        @elseif($atencion->paciente->nivel->categoria === 'Otros')
+                                            <span class="badge badge-warning">OTROS</span>
+                                        @else
+                                            <span class="badge badge-info">{{ $atencion->paciente->nivel->categoria }}</span>
+                                        @endif
                                     @elseif($atencion->categoria)
                                         <span class="badge badge-secondary">{{ $atencion->categoria }}</span>
                                     @else
