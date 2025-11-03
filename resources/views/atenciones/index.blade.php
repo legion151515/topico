@@ -50,6 +50,8 @@
                                 <td>
                                     @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
                                         <span class="badge badge-secondary">{{ $atencion->paciente->carrera->acronimo }}</span>
+                                    @elseif($atencion->categoria)
+                                        <span class="badge badge-info">{{ $atencion->categoria }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -92,6 +94,11 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="mt-3">
+                {{ $atenciones->links() }}
             </div>
         @else
             <div class="alert alert-info">

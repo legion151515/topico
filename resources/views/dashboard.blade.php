@@ -46,20 +46,34 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Paciente</th>
-                    <th>Área</th>
-                    <th>Motivo</th>
                     <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>Acrónimo</th>
+                    <th>Motivo</th>
                     <th>Hora</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($ultimas_atenciones as $atencion)
                     <tr>
-                        <td>{{ $atencion->paciente->nombre ?? 'N/A' }}</td>
-                        <td>{{ $atencion->paciente->carrera->nombre ?? 'N/A' }}</td>
-                        <td>{{ $atencion->motivo->nombre ?? $atencion->motivo_otro ?? 'N/A' }}</td>
                         <td>{{ $atencion->created_at->format('d/m/Y') }}</td>
+                        <td>
+                            @if($atencion->paciente)
+                                {{ $atencion->paciente->nombre }} {{ $atencion->paciente->apellido }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td>
+                            @if($atencion->paciente && $atencion->paciente->carrera && $atencion->paciente->carrera->acronimo)
+                                <span class="badge badge-secondary">{{ $atencion->paciente->carrera->acronimo }}</span>
+                            @elseif($atencion->categoria)
+                                <span class="badge badge-info">{{ $atencion->categoria }}</span>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>{{ $atencion->motivo->nombre ?? $atencion->motivo_otro ?? 'N/A' }}</td>
                         <td>{{ $atencion->hora_entrada }}</td>
                     </tr>
                 @empty

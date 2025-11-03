@@ -14,7 +14,7 @@ class AtencionController extends Controller
     {
         $atenciones = Atencion::with(['paciente.carrera', 'motivo', 'medicamentos'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(5);
         return view('atenciones.index', compact('atenciones'));
     }
 
