@@ -115,11 +115,22 @@
                     </select>
                 </div>
 
-                <!-- CARRERA (Subnivel dinámico) -->
+                <!-- CARRERA (Subnivel dinámico - Solo para Tecnológico y Pedagógico) -->
                 <div class="form-group" id="div_carrera" style="display:none;">
                     <label><i class="fas fa-graduation-cap"></i> Carrera / Subnivel *</label>
                     <select id="carrera_id" name="carrera_id" class="form-control" onchange="actualizarCamposSegunCarrera()">
                         <option value="">-- Selecciona primero una categoría --</option>
+                    </select>
+                </div>
+
+                <!-- NIVEL ESCUELA (Solo para Escuela) -->
+                <div class="form-group" id="div_nivel_escuela" style="display:none;">
+                    <label><i class="fas fa-school"></i> Nivel Escuela *</label>
+                    <select id="nivel_escuela" name="nivel_escuela" class="form-control" onchange="actualizarCamposNivelEscuela()">
+                        <option value="">-- Selecciona nivel --</option>
+                        <option value="INICIAL">INICIAL</option>
+                        <option value="PRIMARIA">PRIMARIA</option>
+                        <option value="SECUNDARIA">SECUNDARIA</option>
                     </select>
                 </div>
 
@@ -137,7 +148,13 @@
                     </select>
                 </div>
 
-                <!-- GRADO (Solo para Escuela) -->
+                <!-- AÑOS (Solo para INICIAL) -->
+                <div class="form-group" id="div_anios" style="display:none;">
+                    <label><i class="fas fa-child"></i> Años *</label>
+                    <input type="text" id="anios" name="anios" class="form-control" placeholder="Ej: 3 años, 4 años, 5 años">
+                </div>
+
+                <!-- GRADO (Solo para PRIMARIA y SECUNDARIA) -->
                 <div class="form-group" id="div_grado" style="display:none;">
                     <label><i class="fas fa-book"></i> Grado *</label>
                     <select id="grado" name="grado" class="form-control">
@@ -405,29 +422,34 @@
         const categoria = document.getElementById('categoria').value;
         const carreraSelect = document.getElementById('carrera_id');
         const divCarrera = document.getElementById('div_carrera');
+        const divNivelEscuela = document.getElementById('div_nivel_escuela');
         const divOtros = document.getElementById('div_otros');
         const divSemestre = document.getElementById('div_semestre');
         const divGrado = document.getElementById('div_grado');
+        const divAnios = document.getElementById('div_anios');
 
         // Resetear todo
         carreraSelect.innerHTML = '<option value="">-- Cargando --</option>';
+        divCarrera.style.display = 'none';
+        divNivelEscuela.style.display = 'none';
         divOtros.style.display = 'none';
         divSemestre.style.display = 'none';
         divGrado.style.display = 'none';
+        divAnios.style.display = 'none';
 
         if (!categoria) {
-            divCarrera.style.display = 'none';
             return;
         }
 
         if (categoria === 'Otros') {
             // Si es "Otros", mostrar campo de texto libre
-            divCarrera.style.display = 'none';
             divOtros.style.display = 'block';
+        } else if (categoria === 'Escuela') {
+            // Para "Escuela", mostrar select de nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)
+            divNivelEscuela.style.display = 'block';
         } else {
-            // Para TODAS las categorías (incluida Escuela): cargar de la BD
+            // Para Tecnológico y Pedagógico: cargar carreras de la BD
             divCarrera.style.display = 'block';
-            divOtros.style.display = 'none';
 
             fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
@@ -444,13 +466,9 @@
                         carreraSelect.appendChild(option);
                     });
 
-                    // Mostrar campos adicionales según categoría
-                    if (categoria === 'Escuela') {
-                        divGrado.style.display = 'block';
-                    } else if (categoria === 'Tecnológico' || categoria === 'Pedagógico') {
-                        divSemestre.style.display = 'block';
-                        actualizarSemestres(categoria);
-                    }
+                    // Mostrar semestre para Tecnológico y Pedagógico
+                    divSemestre.style.display = 'block';
+                    actualizarSemestres(categoria);
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -474,41 +492,46 @@
         }
     }
 
-    // Actualizar grados según la carrera seleccionada (solo para Escuela)
-    function actualizarCamposSegunCarrera() {
-        const categoria = document.getElementById('categoria').value;
+    // Actualizar campos según nivel de escuela seleccionado
+    function actualizarCamposNivelEscuela() {
+        const nivelEscuela = document.getElementById('nivel_escuela').value;
+        const divGrado = document.getElementById('div_grado');
+        const divAnios = document.getElementById('div_anios');
+        const gradoSelect = document.getElementById('grado');
 
-        if (categoria === 'Escuela') {
-            const carreraSelect = document.getElementById('carrera_id');
-            const carreraOption = carreraSelect.options[carreraSelect.selectedIndex];
-            const carreraNombre = carreraOption.textContent.trim();
+        // Ocultar todos los campos primero
+        divGrado.style.display = 'none';
+        divAnios.style.display = 'none';
+        gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
 
-            const gradoSelect = document.getElementById('grado');
-            gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
-
-            // Si la carrera es de tipo años (Inicial)
-            if (carreraNombre.includes('años')) {
-                document.getElementById('div_grado').style.display = 'none';
-            } else if (carreraNombre.includes('Primaria')) {
-                // Mostrar grados de primaria
-                document.getElementById('div_grado').style.display = 'block';
-                for (let i = 1; i <= 6; i++) {
-                    const option = document.createElement('option');
-                    option.value = `${i}°`;
-                    option.textContent = `${i}°`;
-                    gradoSelect.appendChild(option);
-                }
-            } else if (carreraNombre.includes('Secundaria')) {
-                // Mostrar grados de secundaria
-                document.getElementById('div_grado').style.display = 'block';
-                for (let i = 1; i <= 5; i++) {
-                    const option = document.createElement('option');
-                    option.value = `${i}°`;
-                    option.textContent = `${i}°`;
-                    gradoSelect.appendChild(option);
-                }
+        if (nivelEscuela === 'INICIAL') {
+            // Mostrar campo de años para INICIAL
+            divAnios.style.display = 'block';
+        } else if (nivelEscuela === 'PRIMARIA') {
+            // Mostrar grados de primaria (1-6)
+            divGrado.style.display = 'block';
+            for (let i = 1; i <= 6; i++) {
+                const option = document.createElement('option');
+                option.value = `${i}°`;
+                option.textContent = `${i}°`;
+                gradoSelect.appendChild(option);
+            }
+        } else if (nivelEscuela === 'SECUNDARIA') {
+            // Mostrar grados de secundaria (1-5)
+            divGrado.style.display = 'block';
+            for (let i = 1; i <= 5; i++) {
+                const option = document.createElement('option');
+                option.value = `${i}°`;
+                option.textContent = `${i}°`;
+                gradoSelect.appendChild(option);
             }
         }
+    }
+
+    // Actualizar grados según la carrera seleccionada (solo para Tecnológico y Pedagógico)
+    function actualizarCamposSegunCarrera() {
+        // Esta función ya no se usa para Escuela, solo para Tecnológico y Pedagógico si es necesario
+        console.log('actualizarCamposSegunCarrera llamada');
     }
 
     // Cambiar tipo de salida (manual o automática)
@@ -613,6 +636,28 @@
                 alert('Por favor especifica el área o cargo');
                 e.preventDefault();
                 return;
+            }
+        } else if (categoria === 'Escuela') {
+            const nivelEscuela = document.getElementById('nivel_escuela').value;
+            if (!nivelEscuela) {
+                alert('Por favor selecciona un nivel de escuela');
+                e.preventDefault();
+                return;
+            }
+
+            if (nivelEscuela === 'INICIAL') {
+                const anios = document.getElementById('anios').value;
+                if (!anios) {
+                    alert('Por favor ingresa los años para el nivel INICIAL');
+                    e.preventDefault();
+                    return;
+                }
+            } else if (nivelEscuela === 'PRIMARIA' || nivelEscuela === 'SECUNDARIA') {
+                if (!grado) {
+                    alert('Por favor selecciona un grado');
+                    e.preventDefault();
+                    return;
+                }
             }
         } else {
             if (!carreraId) {

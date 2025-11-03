@@ -10,6 +10,8 @@ class Atencion extends Model
         'paciente_id',
         'semestre',
         'grado',
+        'nivel_escuela',
+        'anios',
         'otros_especificacion',
         'motivo_id',
         'motivo_otro',

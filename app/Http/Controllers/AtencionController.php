@@ -155,6 +155,8 @@ class AtencionController extends Controller
         'paciente_id' => $paciente->id,
         'semestre' => $request->semestre,          // Snapshot: semestre al momento de la atención
         'grado' => $request->grado,                // Snapshot: grado al momento de la atención
+        'nivel_escuela' => $request->nivel_escuela, // Snapshot: nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)
+        'anios' => $request->anios,                // Snapshot: años para nivel INICIAL
         'otros_especificacion' => $request->otros_especificacion, // Snapshot: especificación para categoría "Otros"
         'motivo_id' => $request->motivo_id,
         'motivo_otro' => $request->motivo_otro,
@@ -247,6 +249,8 @@ class AtencionController extends Controller
         $atencion->update([
             'semestre' => $request->semestre,
             'grado' => $request->grado,
+            'nivel_escuela' => $request->nivel_escuela,
+            'anios' => $request->anios,
             'otros_especificacion' => $request->otros_especificacion,
             'motivo_id' => $request->motivo_id,
             'motivo_otro' => $request->motivo_otro,

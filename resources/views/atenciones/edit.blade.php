@@ -78,10 +78,22 @@
                     </select>
                 </div>
 
+                <!-- CARRERA (Subnivel dinámico - Solo para Tecnológico y Pedagógico) -->
                 <div class="form-group" id="div_carrera" style="display:none;">
                     <label><i class="fas fa-graduation-cap"></i> Carrera / Subnivel *</label>
                     <select id="carrera_id" name="carrera_id" class="form-control" onchange="actualizarCamposSegunCarrera()">
                         <option value="">-- Selecciona primero una categoría --</option>
+                    </select>
+                </div>
+
+                <!-- NIVEL ESCUELA (Solo para Escuela) -->
+                <div class="form-group" id="div_nivel_escuela" style="display:none;">
+                    <label><i class="fas fa-school"></i> Nivel Escuela *</label>
+                    <select id="nivel_escuela" name="nivel_escuela" class="form-control" onchange="actualizarCamposNivelEscuela()">
+                        <option value="">-- Selecciona nivel --</option>
+                        <option value="INICIAL">INICIAL</option>
+                        <option value="PRIMARIA">PRIMARIA</option>
+                        <option value="SECUNDARIA">SECUNDARIA</option>
                     </select>
                 </div>
 
@@ -97,6 +109,13 @@
                     </select>
                 </div>
 
+                <!-- AÑOS (Solo para INICIAL) -->
+                <div class="form-group" id="div_anios" style="display:none;">
+                    <label><i class="fas fa-child"></i> Años *</label>
+                    <input type="text" id="anios" name="anios" class="form-control" placeholder="Ej: 3 años, 4 años, 5 años">
+                </div>
+
+                <!-- GRADO (Solo para PRIMARIA y SECUNDARIA) -->
                 <div class="form-group" id="div_grado" style="display:none;">
                     <label><i class="fas fa-book"></i> Grado *</label>
                     <select id="grado" name="grado" class="form-control">
@@ -198,6 +217,8 @@
         'carrera_id' => $atencion->paciente->carrera_id ?? '',
         'semestre' => $atencion->semestre ?? '',  // Snapshot guardado en la atención
         'grado' => $atencion->grado ?? '',        // Snapshot guardado en la atención
+        'nivel_escuela' => $atencion->nivel_escuela ?? '',  // Snapshot guardado en la atención
+        'anios' => $atencion->anios ?? '',        // Snapshot guardado en la atención
         'otros_especificacion' => $atencion->otros_especificacion ?? '',  // Snapshot guardado en la atención
         'edad' => $atencion->paciente->edad ?? '',
         'motivo_id' => $atencion->motivo_id ?? '',
@@ -283,26 +304,69 @@
         const categoria = datosAtencion.categoria;
         const carreraSelect = document.getElementById('carrera_id');
         const divCarrera = document.getElementById('div_carrera');
+        const divNivelEscuela = document.getElementById('div_nivel_escuela');
         const divOtros = document.getElementById('div_otros');
         const divSemestre = document.getElementById('div_semestre');
         const divGrado = document.getElementById('div_grado');
+        const divAnios = document.getElementById('div_anios');
+
+        // Ocultar todos primero
+        divCarrera.style.display = 'none';
+        divNivelEscuela.style.display = 'none';
+        divOtros.style.display = 'none';
+        divSemestre.style.display = 'none';
+        divGrado.style.display = 'none';
+        divAnios.style.display = 'none';
 
         if (categoria === 'Otros') {
-            divCarrera.style.display = 'none';
             divOtros.style.display = 'block';
-            divSemestre.style.display = 'none';
-            divGrado.style.display = 'none';
-        } else {
-            divCarrera.style.display = 'block';
-            divOtros.style.display = 'none';
-            
-            if (categoria === 'Escuela') {
-                divGrado.style.display = 'block';
-                divSemestre.style.display = 'none';
-            } else {
-                divSemestre.style.display = 'block';
-                divGrado.style.display = 'none';
+        } else if (categoria === 'Escuela') {
+            // Para Escuela, mostrar nivel escuela y luego los campos correspondientes
+            divNivelEscuela.style.display = 'block';
+
+            // Seleccionar nivel escuela guardado
+            if (datosAtencion.nivel_escuela) {
+                document.getElementById('nivel_escuela').value = datosAtencion.nivel_escuela;
+                console.log('Nivel escuela seleccionado:', datosAtencion.nivel_escuela);
+
+                // Mostrar campos según nivel escuela
+                if (datosAtencion.nivel_escuela === 'INICIAL') {
+                    divAnios.style.display = 'block';
+                    if (datosAtencion.anios) {
+                        document.getElementById('anios').value = datosAtencion.anios;
+                    }
+                } else if (datosAtencion.nivel_escuela === 'PRIMARIA') {
+                    divGrado.style.display = 'block';
+                    const gradoSelect = document.getElementById('grado');
+                    gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
+                    for (let i = 1; i <= 6; i++) {
+                        const option = document.createElement('option');
+                        option.value = `${i}°`;
+                        option.textContent = `${i}°`;
+                        gradoSelect.appendChild(option);
+                    }
+                    if (datosAtencion.grado) {
+                        gradoSelect.value = datosAtencion.grado;
+                    }
+                } else if (datosAtencion.nivel_escuela === 'SECUNDARIA') {
+                    divGrado.style.display = 'block';
+                    const gradoSelect = document.getElementById('grado');
+                    gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
+                    for (let i = 1; i <= 5; i++) {
+                        const option = document.createElement('option');
+                        option.value = `${i}°`;
+                        option.textContent = `${i}°`;
+                        gradoSelect.appendChild(option);
+                    }
+                    if (datosAtencion.grado) {
+                        gradoSelect.value = datosAtencion.grado;
+                    }
+                }
             }
+        } else {
+            // Para Tecnológico y Pedagógico
+            divCarrera.style.display = 'block';
+            divSemestre.style.display = 'block';
 
             fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
@@ -319,11 +383,10 @@
                     if (datosAtencion.carrera_id) {
                         carreraSelect.value = datosAtencion.carrera_id;
                         console.log('Carrera seleccionada:', datosAtencion.carrera_id);
-                        actualizarCamposSegunCarrera();
                     }
 
                     // LLENAR SEMESTRES
-                    if (categoria !== 'Escuela' && configuracion[categoria].semestres) {
+                    if (configuracion[categoria] && configuracion[categoria].semestres) {
                         const semestreSelect = document.getElementById('semestre');
                         semestreSelect.innerHTML = '<option value="">-- Selecciona semestre --</option>';
                         configuracion[categoria].semestres.forEach(semestre => {
@@ -348,25 +411,35 @@
         const categoria = document.getElementById('categoria').value;
         const carreraSelect = document.getElementById('carrera_id');
         const divCarrera = document.getElementById('div_carrera');
+        const divNivelEscuela = document.getElementById('div_nivel_escuela');
         const divOtros = document.getElementById('div_otros');
         const divSemestre = document.getElementById('div_semestre');
         const divGrado = document.getElementById('div_grado');
+        const divAnios = document.getElementById('div_anios');
 
+        // Resetear todo
         carreraSelect.innerHTML = '<option value="">-- Cargando --</option>';
+        divCarrera.style.display = 'none';
+        divNivelEscuela.style.display = 'none';
         divOtros.style.display = 'none';
         divSemestre.style.display = 'none';
         divGrado.style.display = 'none';
+        divAnios.style.display = 'none';
 
         if (!categoria) {
-            divCarrera.style.display = 'none';
             return;
         }
 
         if (categoria === 'Otros') {
-            divCarrera.style.display = 'none';
             divOtros.style.display = 'block';
+        } else if (categoria === 'Escuela') {
+            // Para "Escuela", mostrar select de nivel escuela (INICIAL/PRIMARIA/SECUNDARIA)
+            divNivelEscuela.style.display = 'block';
         } else {
+            // Para Tecnológico y Pedagógico: cargar carreras de la BD
             divCarrera.style.display = 'block';
+            divSemestre.style.display = 'block';
+
             fetch(`/carreras/categoria/${categoria}`)
                 .then(response => response.json())
                 .then(data => {
@@ -377,54 +450,60 @@
                         option.textContent = `${carrera.nombre} (${carrera.acronimo})`;
                         carreraSelect.appendChild(option);
                     });
+
+                    // Llenar semestres
+                    if (configuracion[categoria] && configuracion[categoria].semestres) {
+                        const semestreSelect = document.getElementById('semestre');
+                        semestreSelect.innerHTML = '<option value="">-- Selecciona semestre --</option>';
+                        configuracion[categoria].semestres.forEach(semestre => {
+                            const option = document.createElement('option');
+                            option.value = semestre;
+                            option.textContent = `Semestre ${semestre}`;
+                            semestreSelect.appendChild(option);
+                        });
+                    }
                 })
                 .catch(error => console.error('Error:', error));
-
-            if (categoria === 'Escuela') {
-                divGrado.style.display = 'block';
-            } else {
-                divSemestre.style.display = 'block';
-                if (configuracion[categoria].semestres) {
-                    const semestreSelect = document.getElementById('semestre');
-                    semestreSelect.innerHTML = '<option value="">-- Selecciona semestre --</option>';
-                    configuracion[categoria].semestres.forEach(semestre => {
-                        const option = document.createElement('option');
-                        option.value = semestre;
-                        option.textContent = `Semestre ${semestre}`;
-                        semestreSelect.appendChild(option);
-                    });
-                }
-            }
         }
     }
 
     function actualizarCamposSegunCarrera() {
-        const categoria = document.getElementById('categoria').value;
-        
-        if (categoria === 'Escuela') {
-            const carreraSelect = document.getElementById('carrera_id');
-            const carreraOption = carreraSelect.options[carreraSelect.selectedIndex];
-            const carreraNombre = carreraOption.textContent.split('(')[0].trim();
+        // Esta función ya no se usa para Escuela, solo para Tecnológico y Pedagógico si es necesario
+        console.log('actualizarCamposSegunCarrera llamada');
+    }
 
-            const gradoSelect = document.getElementById('grado');
-            gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
+    // Actualizar campos según nivel de escuela seleccionado
+    function actualizarCamposNivelEscuela() {
+        const nivelEscuela = document.getElementById('nivel_escuela').value;
+        const divGrado = document.getElementById('div_grado');
+        const divAnios = document.getElementById('div_anios');
+        const gradoSelect = document.getElementById('grado');
 
-            const grados = configuracion['Escuela'].grados[carreraNombre];
+        // Ocultar todos los campos primero
+        divGrado.style.display = 'none';
+        divAnios.style.display = 'none';
+        gradoSelect.innerHTML = '<option value="">-- Selecciona grado --</option>';
 
-            if (grados === null) {
-                document.getElementById('div_grado').style.display = 'none';
-            } else if (grados) {
-                document.getElementById('div_grado').style.display = 'block';
-                grados.forEach(grado => {
-                    const option = document.createElement('option');
-                    option.value = grado;
-                    option.textContent = grado;
-                    gradoSelect.appendChild(option);
-                });
-                if (datosAtencion.grado) {
-                    gradoSelect.value = datosAtencion.grado;
-                    console.log('Grado seleccionado:', datosAtencion.grado);
-                }
+        if (nivelEscuela === 'INICIAL') {
+            // Mostrar campo de años para INICIAL
+            divAnios.style.display = 'block';
+        } else if (nivelEscuela === 'PRIMARIA') {
+            // Mostrar grados de primaria (1-6)
+            divGrado.style.display = 'block';
+            for (let i = 1; i <= 6; i++) {
+                const option = document.createElement('option');
+                option.value = `${i}°`;
+                option.textContent = `${i}°`;
+                gradoSelect.appendChild(option);
+            }
+        } else if (nivelEscuela === 'SECUNDARIA') {
+            // Mostrar grados de secundaria (1-5)
+            divGrado.style.display = 'block';
+            for (let i = 1; i <= 5; i++) {
+                const option = document.createElement('option');
+                option.value = `${i}°`;
+                option.textContent = `${i}°`;
+                gradoSelect.appendChild(option);
             }
         }
     }
