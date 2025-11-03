@@ -154,9 +154,13 @@
         'nombre' => $paciente->nombre,
         'apellido' => $paciente->apellido,
         'edad' => $paciente->edad,
-        'categoria' => $paciente->carrera ? $paciente->carrera->categoria : '',
+        'categoria' => $ultimaAtencion->categoria ?? ($paciente->carrera ? $paciente->carrera->categoria : ''),
         'carrera_id' => $paciente->carrera_id ?? '',
-        'otros_especificacion' => $paciente->otros_especificacion ?? '',
+        'semestre' => $ultimaAtencion->semestre ?? '',
+        'grado' => $ultimaAtencion->grado ?? '',
+        'nivel_escuela' => $ultimaAtencion->nivel_escuela ?? '',
+        'anios' => $ultimaAtencion->anios ?? '',
+        'otros_especificacion' => $ultimaAtencion->otros_especificacion ?? ($paciente->otros_especificacion ?? ''),
     ]) !!};
 
     console.log('✅ Datos del paciente cargados:', datosPaciente);
@@ -217,6 +221,26 @@
         } else if (categoria === 'Escuela') {
             // Para Escuela, mostrar nivel escuela
             divNivelEscuela.style.display = 'block';
+
+            // SELECCIONAR NIVEL ESCUELA GUARDADO
+            if (datosPaciente.nivel_escuela) {
+                document.getElementById('nivel_escuela').value = datosPaciente.nivel_escuela;
+                console.log('Nivel escuela seleccionado:', datosPaciente.nivel_escuela);
+
+                // Cargar campos según nivel (grado o años)
+                setTimeout(() => {
+                    actualizarCamposNivelEscuela();
+
+                    // Restaurar grado o años según corresponda
+                    if (datosPaciente.nivel_escuela === 'INICIAL' && datosPaciente.anios) {
+                        document.getElementById('anios').value = datosPaciente.anios;
+                        console.log('Años seleccionado:', datosPaciente.anios);
+                    } else if ((datosPaciente.nivel_escuela === 'PRIMARIA' || datosPaciente.nivel_escuela === 'SECUNDARIA') && datosPaciente.grado) {
+                        document.getElementById('grado').value = datosPaciente.grado;
+                        console.log('Grado seleccionado:', datosPaciente.grado);
+                    }
+                }, 100);
+            }
         } else {
             // Para Tecnológico y Pedagógico
             divCarrera.style.display = 'block';
@@ -249,6 +273,12 @@
                             option.textContent = `Semestre ${semestre}`;
                             semestreSelect.appendChild(option);
                         });
+
+                        // SELECCIONAR SEMESTRE GUARDADO
+                        if (datosPaciente.semestre) {
+                            semestreSelect.value = datosPaciente.semestre;
+                            console.log('Semestre seleccionado:', datosPaciente.semestre);
+                        }
                     }
                 })
                 .catch(error => {

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use App\Models\Carrera;
+use App\Models\Atencion;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PacienteController extends Controller
 {
@@ -52,7 +54,22 @@ class PacienteController extends Controller
         // Agregar carrera_id determinado según categoría
         $validated['carrera_id'] = $carreraId;
 
-        Paciente::create($validated);
+        // Crear el paciente
+        $paciente = Paciente::create($validated);
+
+        // Crear registro en atencions con la información adicional del paciente
+        Atencion::create([
+            'paciente_id' => $paciente->id,
+            'categoria' => $request->categoria,
+            'semestre' => $request->semestre,
+            'grado' => $request->grado,
+            'nivel_escuela' => $request->nivel_escuela,
+            'anios' => $request->anios,
+            'otros_especificacion' => $request->otros_especificacion,
+            'fecha' => Carbon::now()->format('Y-m-d'),
+            'hora_entrada' => Carbon::now()->format('H:i'),
+            'motivo_otro' => 'Registro inicial de paciente'
+        ]);
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente registrado correctamente');
@@ -72,9 +89,15 @@ class PacienteController extends Controller
      */
     public function edit(string $id)
     {
-        $paciente = Paciente::findOrFail($id);
+        $paciente = Paciente::with('carrera')->findOrFail($id);
         $carreras = Carrera::all();
-        return view('pacientes.edit', compact('paciente', 'carreras'));
+
+        // Obtener la atención más reciente del paciente para recuperar los datos adicionales
+        $ultimaAtencion = Atencion::where('paciente_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        return view('pacientes.edit', compact('paciente', 'carreras', 'ultimaAtencion'));
     }
 
     /**
@@ -106,6 +129,20 @@ class PacienteController extends Controller
         $validated['carrera_id'] = $carreraId;
 
         $paciente->update($validated);
+
+        // Crear registro en atencions con la información actualizada del paciente
+        Atencion::create([
+            'paciente_id' => $paciente->id,
+            'categoria' => $request->categoria,
+            'semestre' => $request->semestre,
+            'grado' => $request->grado,
+            'nivel_escuela' => $request->nivel_escuela,
+            'anios' => $request->anios,
+            'otros_especificacion' => $request->otros_especificacion,
+            'fecha' => Carbon::now()->format('Y-m-d'),
+            'hora_entrada' => Carbon::now()->format('H:i'),
+            'motivo_otro' => 'Actualización de datos del paciente'
+        ]);
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente actualizado correctamente');
