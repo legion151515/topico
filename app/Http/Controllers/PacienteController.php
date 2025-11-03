@@ -31,14 +31,26 @@ class PacienteController extends Controller
      */
     public function store(Request $request)
     {
+        // Determinar carrera_id según categoría
+        $carreraId = null;
+        if ($request->categoria === 'Otros' || $request->categoria === 'Escuela') {
+            // Para "Otros" y "Escuela", carrera_id debe ser NULL
+            $carreraId = null;
+        } else {
+            // Para Tecnológico y Pedagógico, usar el carrera_id enviado
+            $carreraId = $request->carrera_id;
+        }
+
         $validated = $request->validate([
             'dni' => 'required|unique:pacientes|max:20',
             'nombre' => 'required|max:255',
             'apellido' => 'required|max:255',
             'edad' => 'required|integer|min:0|max:150',
-            'carrera_id' => 'nullable|exists:carreras,id',
             'otros_especificacion' => 'nullable|max:255'
         ]);
+
+        // Agregar carrera_id determinado según categoría
+        $validated['carrera_id'] = $carreraId;
 
         Paciente::create($validated);
 
@@ -72,14 +84,26 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::findOrFail($id);
 
+        // Determinar carrera_id según categoría
+        $carreraId = null;
+        if ($request->categoria === 'Otros' || $request->categoria === 'Escuela') {
+            // Para "Otros" y "Escuela", carrera_id debe ser NULL
+            $carreraId = null;
+        } else {
+            // Para Tecnológico y Pedagógico, usar el carrera_id enviado
+            $carreraId = $request->carrera_id;
+        }
+
         $validated = $request->validate([
             'dni' => 'required|max:20|unique:pacientes,dni,' . $id,
             'nombre' => 'required|max:255',
             'apellido' => 'required|max:255',
             'edad' => 'required|integer|min:0|max:150',
-            'carrera_id' => 'nullable|exists:carreras,id',
             'otros_especificacion' => 'nullable|max:255'
         ]);
+
+        // Agregar carrera_id determinado según categoría
+        $validated['carrera_id'] = $carreraId;
 
         $paciente->update($validated);
 
