@@ -56,15 +56,17 @@ class AtencionController extends Controller
     // ============================================
     $carreraId = null;
 
-    if ($request->categoria === 'Otros') {
-        // Para "Otros", carrera_id debe ser NULL
+    if ($request->categoria === 'Otros' || $request->categoria === 'Escuela') {
+        // Para "Otros" y "Escuela", carrera_id debe ser NULL
+        // "Otros" usa otros_especificacion
+        // "Escuela" usa nivel_escuela
         $carreraId = null;
-        \Log::info('Categoría "Otros" detectada, carrera_id = NULL');
+        \Log::info('Categoría "' . $request->categoria . '" detectada, carrera_id = NULL');
 
     } else {
-        // Para otras categorías, validar carrera_id
+        // Para Tecnológico y Pedagógico, validar carrera_id
         if (empty($request->carrera_id)) {
-            \Log::error('ERROR: carrera_id vacío para categoría que no es "Otros"');
+            \Log::error('ERROR: carrera_id vacío para categoría que no es "Otros" ni "Escuela"');
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['carrera_id' => 'Debe seleccionar una carrera para la categoría ' . $request->categoria]);
@@ -234,13 +236,23 @@ class AtencionController extends Controller
     {
         $atencion = Atencion::with('paciente')->findOrFail($id);
 
+        // Determinar carrera_id según categoría
+        $carreraId = null;
+        if ($request->categoria === 'Otros' || $request->categoria === 'Escuela') {
+            // Para "Otros" y "Escuela", carrera_id debe ser NULL
+            $carreraId = null;
+        } else {
+            // Para Tecnológico y Pedagógico, usar el carrera_id enviado
+            $carreraId = $request->carrera_id;
+        }
+
         // Actualizar datos del paciente si existen
         if ($atencion->paciente && $request->has('dni')) {
             $atencion->paciente->update([
                 'nombre' => $request->nombre,
                 'apellido' => $request->apellido,
                 'edad' => $request->edad,
-                'carrera_id' => $request->carrera_id,
+                'carrera_id' => $carreraId,
                 'otros_especificacion' => $request->otros_especificacion
             ]);
         }
